@@ -8,6 +8,7 @@ use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\SouvenirController;
 use App\Http\Controllers\GreetingController;
+use App\Http\Controllers\SettingsController;
 
 // Guest routes
 Route::get('/', function () {
@@ -46,4 +47,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Search
     Route::get('/search', [GuestController::class, 'search'])->name('guests.search');
+
+    // Settings
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
 });

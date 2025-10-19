@@ -147,7 +147,7 @@
                 <span class="text-xs">Tamu Baru</span>
             </a>
 
-            <a href="#" id="settingsBtn" class="flex flex-col items-center text-gray-500">
+            <a href="#" id="settingsBtn" class="flex flex-col items-center {{ request()->routeIs('settings.*') ? 'text-purple-600' : 'text-gray-500' }}">
                 <i class="fas fa-cog text-xl mb-1"></i>
                 <span class="text-xs">Pengaturan</span>
             </a>
@@ -178,7 +178,7 @@
         // Settings Button
         document.getElementById('settingsBtn').addEventListener('click', (e) => {
             e.preventDefault();
-            menuToggle.click();
+            window.location.href = '{{ route("settings.index") }}';
         });
     </script>
 
