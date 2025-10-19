@@ -164,20 +164,30 @@ class GuestController extends Controller
     }
 
     /**
-     * Search guests.
+     * Search guests (only not checked in).
      */
     public function search(Request $request)
     {
         $event = Event::where('is_active', true)->first();
+
+        if (!$event) {
+            return redirect()->route('home')
+                ->with('error', 'Tidak ada event aktif.');
+        }
+
         $searchTerm = $request->get('q', '');
 
+        // Get only guests who haven't checked in
         $guests = Guest::where('event_id', $event->id)
-            ->where(function($query) use ($searchTerm) {
-                $query->where('name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('address', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('whatsapp', 'like', '%' . $searchTerm . '%');
+            ->whereDoesntHave('attendance')
+            ->when($searchTerm, function($query) use ($searchTerm) {
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('name', 'like', '%' . $searchTerm . '%')
+                      ->orWhere('address', 'like', '%' . $searchTerm . '%')
+                      ->orWhere('whatsapp', 'like', '%' . $searchTerm . '%');
+                });
             })
-            ->with(['group', 'attendance'])
+            ->with('group')
             ->latest()
             ->paginate(20);
 

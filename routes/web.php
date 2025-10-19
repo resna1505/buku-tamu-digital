@@ -33,6 +33,7 @@ Route::middleware(['auth'])->group(function () {
     // Check-in
     Route::get('/checkin', [CheckInController::class, 'index'])->name('checkin.index');
     Route::post('/checkin/scan', [CheckInController::class, 'scan'])->name('checkin.scan');
+    Route::get('/checkin/success/{guest}', [CheckInController::class, 'success'])->name('checkin.success');
 
     // Attendance
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
