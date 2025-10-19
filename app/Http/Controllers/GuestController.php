@@ -36,6 +36,9 @@ class GuestController extends Controller
             ->latest()
             ->paginate(20);
 
+        // Get all groups for filter
+        $groups = GuestGroup::where('event_id', $event->id)->get();
+
         // Calculate statistics
         $stats = [
             'invited' => Guest::where('event_id', $event->id)
@@ -47,7 +50,7 @@ class GuestController extends Controller
                 ->count(),
         ];
 
-        return view('guests.index', compact('guests', 'stats', 'event'));
+        return view('guests.index', compact('guests', 'stats', 'event', 'groups'));
     }
 
     /**
@@ -229,8 +232,49 @@ class GuestController extends Controller
      */
     public function sendWhatsApp(Guest $guest)
     {
-        // TODO: Implement WhatsApp integration
-        return redirect()->route('guests.index')
-            ->with('info', 'Fitur WhatsApp akan segera tersedia!');
+        if (!$guest->whatsapp) {
+            return redirect()->back()
+                ->with('error', 'Nomor WhatsApp tidak tersedia untuk tamu ini.');
+        }
+
+        $qrUrl = url('/whatsapp/undangan/' . $guest->qr_code);
+        $message = "Haloo *{$guest->name}*,\n\nKamu diundang, harap tunjukan QR Code sebagai akses masuk.. 🙏\n\nDownload QR Code E-Invitation:\n{$qrUrl}";
+
+        $waUrl = "https://wa.me/{$guest->whatsapp}?text=" . urlencode($message);
+
+        return redirect()->away($waUrl);
+    }
+
+    /**
+     * Bulk WhatsApp to filtered guests.
+     */
+    public function bulkWhatsApp(Request $request)
+    {
+        $event = Event::where('is_active', true)->first();
+        $filter = $request->get('filter', 'all');
+        $groupId = $request->get('group_id');
+
+        $query = Guest::where('event_id', $event->id)
+            ->whereNotNull('whatsapp')
+            ->where('whatsapp', '!=', '');
+
+        if ($filter === 'hadir') {
+            $query->whereHas('attendance');
+        } elseif ($filter === 'belum') {
+            $query->whereDoesntHave('attendance');
+        } elseif ($filter === 'group' && $groupId) {
+            $query->where('group_id', $groupId);
+        }
+
+        $guests = $query->get();
+
+        if ($guests->isEmpty()) {
+            return redirect()->back()
+                ->with('error', 'Tidak ada tamu dengan nomor WhatsApp.');
+        }
+
+        // For bulk WhatsApp, we'll open multiple tabs (or create a queue job)
+        // For now, let's show a summary page
+        return view('guests.bulk-whatsapp', compact('guests', 'event'));
     }
 }

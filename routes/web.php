@@ -30,6 +30,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('guests/export/pdf', [GuestController::class, 'exportPdf'])->name('guests.export.pdf');
     Route::get('guests/export/excel', [GuestController::class, 'exportExcel'])->name('guests.export.excel');
     Route::post('guests/{guest}/send-whatsapp', [GuestController::class, 'sendWhatsApp'])->name('guests.send-whatsapp');
+    Route::get('guests-bulk-whatsapp', [GuestController::class, 'bulkWhatsApp'])->name('guests.bulk-whatsapp');
 
     // Check-in
     Route::get('/checkin', [CheckInController::class, 'index'])->name('checkin.index');
@@ -52,3 +53,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
 });
+
+// Public WhatsApp QR Download Page
+Route::get('/whatsapp/undangan/{qrCode}', function($qrCode) {
+    $guest = \App\Models\Guest::where('qr_code', $qrCode)->firstOrFail();
+    $event = $guest->event;
+    return view('public.qr-download', compact('guest', 'event'));
+})->name('whatsapp.qr-download');

@@ -69,20 +69,20 @@
         </a>
 
         <!-- Souvenir -->
-        <a href="{{ route('souvenir.index') }}" class="flex flex-col items-center p-4 rounded-xl hover:bg-yellow-50 transition">
+        {{-- <a href="{{ route('souvenir.index') }}" class="flex flex-col items-center p-4 rounded-xl hover:bg-yellow-50 transition">
             <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-3">
                 <i class="fas fa-gift text-yellow-600 text-2xl"></i>
             </div>
             <span class="text-sm text-center font-medium text-gray-700">Souvenir</span>
-        </a>
+        </a> --}}
 
         <!-- Ucapan -->
-        <a href="{{ route('greeting.index') }}" class="flex flex-col items-center p-4 rounded-xl hover:bg-pink-50 transition">
+        {{-- <a href="{{ route('greeting.index') }}" class="flex flex-col items-center p-4 rounded-xl hover:bg-pink-50 transition">
             <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-3">
                 <i class="fas fa-comments text-pink-600 text-2xl"></i>
             </div>
             <span class="text-sm text-center font-medium text-gray-700">Ucapan</span>
-        </a>
+        </a> --}}
 
         <!-- Layar Sapa -->
         <a href="#" class="flex flex-col items-center p-4 rounded-xl hover:bg-indigo-50 transition">
