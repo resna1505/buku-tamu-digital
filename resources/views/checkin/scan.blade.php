@@ -13,26 +13,13 @@
 <div class="bg-white rounded-3xl p-6 card-shadow mb-6">
     <div class="relative">
         <!-- Video Preview -->
-        <div id="videoContainer" class="relative bg-black rounded-2xl overflow-hidden" style="aspect-ratio: 4/3;">
-            <video id="qrVideo" class="w-full h-full object-cover"></video>
+        <div id="reader" class="relative bg-black rounded-2xl overflow-hidden" style="min-height: 400px;">
+            <!-- Scanner akan render di sini -->
+        </div>
 
-            <!-- Scanning Overlay -->
-            <div class="absolute inset-0 flex items-center justify-center">
-                <div class="w-64 h-64 border-4 border-purple-500 rounded-2xl relative">
-                    <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white"></div>
-                    <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white"></div>
-                    <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white"></div>
-                    <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white"></div>
-
-                    <!-- Scanning Line Animation -->
-                    <div class="scan-line"></div>
-                </div>
-            </div>
-
-            <!-- Status Message -->
-            <div id="statusMessage" class="absolute bottom-4 left-4 right-4 bg-black bg-opacity-70 text-white text-center py-2 px-4 rounded-lg">
-                Menunggu QR Code...
-            </div>
+        <!-- Status Message -->
+        <div id="statusMessage" class="mt-4 text-center py-2 px-4 rounded-lg bg-blue-100 text-blue-800">
+            Memuat kamera...
         </div>
     </div>
 </div>
@@ -40,28 +27,14 @@
 <!-- Camera Controls -->
 <div class="bg-white rounded-2xl p-6 card-shadow mb-6">
     <div class="flex justify-center space-x-4">
-        <button id="switchCameraBtn" class="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-300 transition">
-            <i class="fas fa-sync-alt mr-2"></i>Ganti Kamera
-        </button>
-
-        <button id="fullscreenBtn" class="bg-purple-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-600 transition">
-            <i class="fas fa-expand mr-2"></i>Fullscreen
-        </button>
-
         <button id="stopCameraBtn" class="bg-red-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-600 transition">
-            <i class="fas fa-stop mr-2"></i>Stop
+            <i class="fas fa-stop mr-2"></i>Stop Kamera
+        </button>
+
+        <button id="restartBtn" class="bg-purple-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-600 transition">
+            <i class="fas fa-redo mr-2"></i>Restart
         </button>
     </div>
-</div>
-
-<!-- Camera Selection -->
-<div class="bg-white rounded-2xl p-6 card-shadow">
-    <label class="block text-gray-700 font-semibold mb-3">
-        <i class="fas fa-camera mr-2 text-purple-600"></i>Pilih Kamera
-    </label>
-    <select id="cameraSelect" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500">
-        <option value="">Memuat kamera...</option>
-    </select>
 </div>
 
 <!-- Manual Input (Alternative) -->
@@ -71,26 +44,31 @@
     </button>
 </div>
 
+<!-- Debug Info -->
+<div id="debugInfo" class="mt-6 bg-gray-100 rounded-2xl p-4 text-sm text-gray-600">
+    <strong>Debug Info:</strong><br>
+    <span id="debugText">Menginisialisasi...</span>
+</div>
+
 @push('styles')
 <style>
-    .scan-line {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #a855f7, transparent);
-        animation: scanning 2s linear infinite;
+    #reader {
+        position: relative;
     }
 
-    @keyframes scanning {
-        0% { top: 0; }
-        50% { top: 100%; }
-        100% { top: 0; }
+    #reader video {
+        width: 100% !important;
+        height: auto !important;
+        border-radius: 1rem;
     }
 
-    #qrVideo {
-        transform: scaleX(-1); /* Mirror effect for front camera */
+    #reader__scan_region {
+        border-radius: 1rem !important;
+    }
+
+    /* Hide default controls yang tidak perlu */
+    #reader__dashboard_section_csr {
+        display: none !important;
     }
 </style>
 @endpush
@@ -100,71 +78,146 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 
 <script>
-    let html5QrCode;
-    let currentCamera = 'environment'; // or 'user' for front camera
-    let cameras = [];
+    let html5QrCode = null;
+    let isScanning = false;
+
+    // Update status message
+    function updateStatus(message, type = 'info') {
+        const statusEl = document.getElementById('statusMessage');
+        statusEl.textContent = message;
+
+        statusEl.className = 'mt-4 text-center py-2 px-4 rounded-lg';
+
+        if (type === 'success') {
+            statusEl.className += ' bg-green-100 text-green-800';
+        } else if (type === 'error') {
+            statusEl.className += ' bg-red-100 text-red-800';
+        } else if (type === 'warning') {
+            statusEl.className += ' bg-yellow-100 text-yellow-800';
+        } else {
+            statusEl.className += ' bg-blue-100 text-blue-800';
+        }
+    }
+
+    // Update debug info
+    function updateDebug(message) {
+        document.getElementById('debugText').innerHTML = message;
+        console.log('DEBUG:', message);
+    }
 
     // Initialize QR Scanner
     async function initScanner() {
         try {
-            html5QrCode = new Html5Qrcode("qrVideo");
+            updateStatus('Meminta izin kamera...', 'info');
+            updateDebug('Checking HTTPS...<br>Protocol: ' + location.protocol);
+
+            // Check HTTPS
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                updateStatus('⚠️ HTTPS diperlukan untuk akses kamera', 'error');
+                updateDebug('ERROR: Not using HTTPS<br>Current URL: ' + location.href);
+                return;
+            }
+
+            updateDebug('Getting cameras...');
 
             // Get available cameras
             const devices = await Html5Qrcode.getCameras();
-            cameras = devices;
 
-            // Populate camera select
-            const cameraSelect = document.getElementById('cameraSelect');
-            cameraSelect.innerHTML = '';
+            updateDebug(`Found ${devices.length} camera(s):<br>` +
+                devices.map((d, i) => `${i + 1}. ${d.label || 'Camera ' + (i + 1)}`).join('<br>'));
 
-            devices.forEach((device, index) => {
-                const option = document.createElement('option');
-                option.value = device.id;
-                option.text = device.label || `Camera ${index + 1}`;
-                cameraSelect.appendChild(option);
-            });
-
-            // Start scanning with default camera
-            if (devices.length > 0) {
-                startScanning(devices[0].id);
+            if (devices.length === 0) {
+                updateStatus('⚠️ Tidak ada kamera ditemukan', 'error');
+                updateDebug('No cameras detected. Check:<br>1. Camera permission granted?<br>2. Camera not used by other app?<br>3. Browser supports camera?');
+                return;
             }
+
+            // Initialize scanner
+            html5QrCode = new Html5Qrcode("reader");
+
+            updateDebug('Starting camera...');
+
+            // Prefer back camera (environment)
+            let cameraId = devices[0].id;
+            const backCamera = devices.find(device =>
+                device.label.toLowerCase().includes('back') ||
+                device.label.toLowerCase().includes('rear') ||
+                device.label.toLowerCase().includes('environment')
+            );
+
+            if (backCamera) {
+                cameraId = backCamera.id;
+                updateDebug(`Using back camera: ${backCamera.label}`);
+            } else {
+                updateDebug(`Using first camera: ${devices[0].label || 'Unknown'}`);
+            }
+
+            // Start scanning
+            await html5QrCode.start(
+                cameraId,
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0
+                },
+                (decodedText, decodedResult) => {
+                    // QR Code detected
+                    onScanSuccess(decodedText);
+                },
+                (errorMessage) => {
+                    // Scanning errors (can be ignored, happens frequently)
+                }
+            );
+
+            isScanning = true;
+            updateStatus('✓ Kamera aktif - Arahkan ke QR Code', 'success');
+            updateDebug('Camera started successfully!<br>Waiting for QR code...');
+
         } catch (err) {
             console.error('Error initializing scanner:', err);
-            updateStatus('Error: Tidak dapat mengakses kamera');
-        }
-    }
 
-    // Start scanning
-    function startScanning(cameraId) {
-        const config = {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-        };
+            // Provide specific error messages
+            let errorMsg = 'Error: Tidak dapat mengakses kamera';
+            let debugMsg = 'Error: ' + err.message;
 
-        html5QrCode.start(
-            cameraId,
-            config,
-            (decodedText, decodedResult) => {
-                // QR Code detected
-                onScanSuccess(decodedText);
-            },
-            (errorMessage) => {
-                // Scanning error (can be ignored)
+            if (err.name === 'NotAllowedError') {
+                errorMsg = '⚠️ Izin kamera ditolak. Klik ikon kamera di address bar browser untuk mengizinkan.';
+                debugMsg = 'NotAllowedError: Camera permission denied by user';
+            } else if (err.name === 'NotFoundError') {
+                errorMsg = '⚠️ Kamera tidak ditemukan di perangkat ini';
+                debugMsg = 'NotFoundError: No camera device found';
+            } else if (err.name === 'NotReadableError') {
+                errorMsg = '⚠️ Kamera sedang digunakan aplikasi lain. Tutup aplikasi lain yang menggunakan kamera.';
+                debugMsg = 'NotReadableError: Camera in use by another application';
+            } else if (err.name === 'OverconstrainedError') {
+                errorMsg = '⚠️ Kamera tidak mendukung pengaturan yang diminta';
+                debugMsg = 'OverconstrainedError: Camera constraints not satisfied';
+            } else if (location.protocol !== 'https:') {
+                errorMsg = '⚠️ Gunakan HTTPS untuk akses kamera (bukan HTTP)';
+                debugMsg = 'SecurityError: HTTPS required for camera access';
             }
-        ).catch(err => {
-            console.error('Error starting scanner:', err);
-            updateStatus('Error: Gagal memulai scanner');
-        });
 
-        updateStatus('Menunggu QR Code...');
+            updateStatus(errorMsg, 'error');
+            updateDebug(debugMsg + '<br><br>Full error:<br>' + err.toString());
+        }
     }
 
     // Handle successful scan
     function onScanSuccess(qrCodeData) {
-        updateStatus('QR Code terdeteksi!', 'success');
+        if (!isScanning) return; // Prevent multiple scans
+
+        isScanning = false;
+        updateStatus('✓ QR Code terdeteksi!', 'success');
+        updateDebug('QR Code detected: ' + qrCodeData);
 
         // Stop scanner
-        html5QrCode.stop();
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                updateDebug('Camera stopped. Processing check-in...');
+            }).catch(err => {
+                console.error('Error stopping scanner:', err);
+            });
+        }
 
         // Send check-in request
         checkInGuest(qrCodeData);
@@ -173,6 +226,9 @@
     // Check-in guest
     async function checkInGuest(qrData) {
         try {
+            updateStatus('Memproses check-in...', 'info');
+            updateDebug('Sending check-in request...');
+
             const response = await fetch('{{ route("checkin.scan") }}', {
                 method: 'POST',
                 headers: {
@@ -183,87 +239,84 @@
             });
 
             const result = await response.json();
+            updateDebug('Server response: ' + JSON.stringify(result));
 
             if (result.success) {
-                updateStatus('Check-in berhasil!', 'success');
+                updateStatus('✓ Check-in berhasil! Mengalihkan...', 'success');
                 setTimeout(() => {
                     window.location.href = result.redirect_url;
                 }, 1500);
             } else {
-                updateStatus(result.message || 'Check-in gagal', 'error');
+                updateStatus('✗ ' + (result.message || 'Check-in gagal'), 'error');
                 setTimeout(() => {
+                    isScanning = true;
                     initScanner(); // Restart scanner
                 }, 2000);
             }
         } catch (error) {
             console.error('Check-in error:', error);
-            updateStatus('Error: Gagal melakukan check-in', 'error');
+            updateStatus('✗ Error: Gagal melakukan check-in', 'error');
+            updateDebug('Check-in error: ' + error.toString());
             setTimeout(() => {
+                isScanning = true;
                 initScanner(); // Restart scanner
             }, 2000);
         }
     }
 
-    // Update status message
-    function updateStatus(message, type = 'info') {
-        const statusEl = document.getElementById('statusMessage');
-        statusEl.textContent = message;
-
-        statusEl.className = 'absolute bottom-4 left-4 right-4 text-center py-2 px-4 rounded-lg';
-
-        if (type === 'success') {
-            statusEl.className += ' bg-green-500 text-white';
-        } else if (type === 'error') {
-            statusEl.className += ' bg-red-500 text-white';
-        } else {
-            statusEl.className += ' bg-black bg-opacity-70 text-white';
-        }
-    }
-
-    // Switch camera
-    document.getElementById('switchCameraBtn').addEventListener('click', async () => {
-        if (cameras.length > 1) {
-            await html5QrCode.stop();
-            const currentIndex = cameras.findIndex(cam => cam.id === document.getElementById('cameraSelect').value);
-            const nextIndex = (currentIndex + 1) % cameras.length;
-            document.getElementById('cameraSelect').value = cameras[nextIndex].id;
-            startScanning(cameras[nextIndex].id);
-        }
-    });
-
-    // Camera select change
-    document.getElementById('cameraSelect').addEventListener('change', async (e) => {
-        await html5QrCode.stop();
-        startScanning(e.target.value);
-    });
-
-    // Fullscreen
-    document.getElementById('fullscreenBtn').addEventListener('click', () => {
-        const container = document.getElementById('videoContainer');
-        if (container.requestFullscreen) {
-            container.requestFullscreen();
-        } else if (container.webkitRequestFullscreen) {
-            container.webkitRequestFullscreen();
-        }
-    });
-
-    // Stop camera
+    // Stop camera button
     document.getElementById('stopCameraBtn').addEventListener('click', async () => {
-        await html5QrCode.stop();
-        window.location.href = '{{ route("home") }}';
+        if (html5QrCode && isScanning) {
+            await html5QrCode.stop();
+            isScanning = false;
+            updateStatus('Kamera dihentikan', 'warning');
+            updateDebug('Camera stopped by user');
+        }
+    });
+
+    // Restart button
+    document.getElementById('restartBtn').addEventListener('click', async () => {
+        if (html5QrCode && isScanning) {
+            await html5QrCode.stop();
+        }
+        isScanning = false;
+        updateDebug('Restarting scanner...');
+        setTimeout(() => {
+            initScanner();
+        }, 500);
     });
 
     // Manual input
     document.getElementById('manualInputBtn').addEventListener('click', () => {
-        const guestId = prompt('Masukkan ID Tamu:');
+        const guestId = prompt('Masukkan ID/Kode Tamu:');
         if (guestId) {
+            if (html5QrCode && isScanning) {
+                html5QrCode.stop();
+                isScanning = false;
+            }
             checkInGuest(guestId);
         }
     });
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', () => {
-        initScanner();
+        updateDebug('Page loaded. Initializing scanner...');
+
+        // Delay untuk memastikan DOM ready
+        setTimeout(() => {
+            initScanner();
+        }, 500);
+    });
+
+    // Handle page visibility (pause when hidden)
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && html5QrCode && isScanning) {
+            html5QrCode.pause();
+            updateDebug('Camera paused (page hidden)');
+        } else if (!document.hidden && html5QrCode && isScanning) {
+            html5QrCode.resume();
+            updateDebug('Camera resumed (page visible)');
+        }
     });
 </script>
 @endpush
