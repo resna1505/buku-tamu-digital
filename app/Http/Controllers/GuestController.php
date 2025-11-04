@@ -174,24 +174,76 @@ class GuestController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    // GANTI METHOD update() di GuestController.php dengan code ini:
+
     public function update(Request $request, Guest $guest)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'whatsapp' => 'nullable|string|max:20',
-            'table_number' => 'nullable|string|max:50',
+            // Data Mahasiswa
+            'student_name' => 'required|string|max:255',
+            'npm' => 'required|string|max:50',
+            'faculty' => 'required|string|max:100',
+            'study_program' => 'required|string|max:100',
+            'email' => 'nullable|email|max:255',
+            'whatsapp' => 'required|string|max:20',
+            'payment_proof' => 'nullable|url',
+
+            // Data Tamu
+            'guest_1_name' => 'required|string|max:255',
+            'guest_2_name' => 'nullable|string|max:255',
+
+            // Nomor Kursi
+            'seat_number_guest_1' => 'nullable|string|max:20',
+            'seat_number_guest_2' => 'nullable|string|max:20',
+
+            // Pengaturan
             'is_vip' => 'required|boolean',
             'group_id' => 'required|exists:guest_groups,id',
-            'guests_count' => 'nullable|integer|min:1',
+        ], [
+            'student_name.required' => 'Nama mahasiswa harus diisi',
+            'npm.required' => 'NPM harus diisi',
+            'faculty.required' => 'Fakultas harus dipilih',
+            'study_program.required' => 'Program studi harus diisi',
+            'whatsapp.required' => 'Nomor WhatsApp harus diisi',
+            'guest_1_name.required' => 'Nama Tamu 1 harus diisi',
+            'is_vip.required' => 'Status VIP harus dipilih',
+            'group_id.required' => 'Grup tamu harus dipilih',
+            'group_id.exists' => 'Grup tamu tidak valid',
         ]);
 
-        $validated['guests_count'] = $validated['guests_count'] ?? 1;
+        // Format nomor WhatsApp
+        $phone = preg_replace('/\s+/', '', $validated['whatsapp']);
+        if (substr($phone, 0, 1) === '0') {
+            $phone = '62' . substr($phone, 1);
+        } elseif (substr($phone, 0, 2) !== '62') {
+            $phone = '62' . $phone;
+        }
 
-        $guest->update($validated);
+        // Hitung jumlah tamu
+        $guestCount = !empty($validated['guest_2_name']) ? 2 : 1;
+
+        $updateData = [
+            'name' => $validated['student_name'], // Update name juga
+            'student_name' => $validated['student_name'],
+            'npm' => $validated['npm'],
+            'faculty' => $validated['faculty'],
+            'study_program' => $validated['study_program'],
+            'email' => $validated['email'] ?? null,
+            'whatsapp' => $phone,
+            'payment_proof' => $validated['payment_proof'] ?? null,
+            'guest_1_name' => $validated['guest_1_name'],
+            'guest_2_name' => $validated['guest_2_name'] ?? null,
+            'seat_number_guest_1' => $validated['seat_number_guest_1'] ?? null,
+            'seat_number_guest_2' => $validated['seat_number_guest_2'] ?? null,
+            'is_vip' => $validated['is_vip'],
+            'group_id' => $validated['group_id'],
+            'guests_count' => $guestCount,
+        ];
+
+        $guest->update($updateData);
 
         return redirect()->route('guests.index')
-            ->with('success', 'Data tamu "' . $guest->name . '" berhasil diperbarui!');
+            ->with('success', 'Data wisuda "' . $guest->name . '" berhasil diperbarui!');
     }
 
     /**
