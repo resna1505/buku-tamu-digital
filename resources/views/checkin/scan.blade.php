@@ -50,6 +50,16 @@
     <span id="debugText">Menginisialisasi...</span>
 </div>
 
+<audio id="successSound" preload="auto">
+    <source src="{{ asset('sounds/success.mp3') }}" type="audio/mpeg">
+    {{-- <source src="{{ asset('sounds/success.wav') }}" type="audio/wav"> --}}
+</audio>
+
+<audio id="errorSound" preload="auto">
+    <source src="{{ asset('sounds/error.mp3') }}" type="audio/mpeg">
+    {{-- <source src="{{ asset('sounds/error.wav') }}" type="audio/wav"> --}}
+</audio>
+
 @push('styles')
 <style>
     #reader {
@@ -70,6 +80,29 @@
     #reader__dashboard_section_csr {
         display: none !important;
     }
+
+    @keyframes successPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .success-animation {
+        animation: successPulse 0.5s ease;
+        box-shadow: 0 0 30px rgba(34, 197, 94, 0.3) !important;
+    }
+
+    /* Shake animation for errors */
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+
+    .shake-animation {
+        animation: shake 0.5s ease;
+        box-shadow: 0 0 30px rgba(239, 68, 68, 0.3) !important;
+    }
 </style>
 @endpush
 
@@ -80,6 +113,27 @@
 <script>
     let html5QrCode = null;
     let isScanning = false;
+
+    function playSuccessSound() {
+        const audio = document.getElementById('successSound');
+        if (audio) {
+            audio.play().catch(e => console.log('Could not play success sound:', e));
+        }
+    }
+
+    function playErrorFeedback() {
+        // Vibrate if supported
+        if ('vibrate' in navigator) {
+            // Pattern: vibrate 200ms, pause 100ms, vibrate 200ms
+            navigator.vibrate([200, 100, 200]);
+        }
+
+        // Play error sound
+        const audio = document.getElementById('errorSound');
+        if (audio) {
+            audio.play().catch(e => console.log('Could not play error sound:', e));
+        }
+    }
 
     // Update status message
     function updateStatus(message, type = 'info') {
@@ -204,13 +258,16 @@
 
     // Handle successful scan
     function onScanSuccess(qrCodeData) {
-        if (!isScanning) return; // Prevent multiple scans
+        if (!isScanning) return;
 
         isScanning = false;
+
+        // Play beep sound when QR detected
+        playBeepSound();
+
         updateStatus('✓ QR Code terdeteksi!', 'success');
         updateDebug('QR Code detected: ' + qrCodeData);
 
-        // Stop scanner
         if (html5QrCode) {
             html5QrCode.stop().then(() => {
                 updateDebug('Camera stopped. Processing check-in...');
@@ -219,8 +276,30 @@
             });
         }
 
-        // Send check-in request
         checkInGuest(qrCodeData);
+    }
+
+    function playBeepSound() {
+        // Create a simple beep using Web Audio API
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 1000; // 1000 Hz
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        } catch (e) {
+            console.log('Could not play beep sound:', e);
+        }
     }
 
     // Check-in guest
@@ -242,27 +321,56 @@
             updateDebug('Server response: ' + JSON.stringify(result));
 
             if (result.success) {
+                // Play success sound
+                playSuccessSound();
+
                 updateStatus('✓ Check-in berhasil! Mengalihkan...', 'success');
+
+                // Add success animation to the card
+                document.querySelector('.card-shadow').classList.add('success-animation');
+
                 setTimeout(() => {
                     window.location.href = result.redirect_url;
                 }, 1500);
             } else {
+                // Play error feedback (sound + vibration)
+                playErrorFeedback();
+
                 updateStatus('✗ ' + (result.message || 'Check-in gagal'), 'error');
+
+                // Add shake animation to the card
+                document.querySelector('.card-shadow').classList.add('shake-animation');
+                setTimeout(() => {
+                    document.querySelector('.card-shadow').classList.remove('shake-animation');
+                }, 500);
+
                 setTimeout(() => {
                     isScanning = true;
-                    initScanner(); // Restart scanner
+                    initScanner();
                 }, 2000);
             }
         } catch (error) {
             console.error('Check-in error:', error);
+
+            // Play error feedback
+            playErrorFeedback();
+
             updateStatus('✗ Error: Gagal melakukan check-in', 'error');
             updateDebug('Check-in error: ' + error.toString());
+
+            // Add shake animation
+            document.querySelector('.card-shadow').classList.add('shake-animation');
+            setTimeout(() => {
+                document.querySelector('.card-shadow').classList.remove('shake-animation');
+            }, 500);
+
             setTimeout(() => {
                 isScanning = true;
-                initScanner(); // Restart scanner
+                initScanner();
             }, 2000);
         }
     }
+
 
     // Stop camera button
     document.getElementById('stopCameraBtn').addEventListener('click', async () => {

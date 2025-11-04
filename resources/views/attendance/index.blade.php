@@ -22,7 +22,7 @@
 </div>
 
 <!-- Filter Tabs -->
-<div class="bg-white rounded-2xl p-4 card-shadow mb-6">
+{{-- <div class="bg-white rounded-2xl p-4 card-shadow mb-6">
     <div class="flex space-x-2">
         <button class="filter-tab active flex-1 px-4 py-3 rounded-xl text-sm font-medium">
             Tamu Hadir
@@ -31,10 +31,10 @@
             Tidak Hadir
         </button>
     </div>
-</div>
+</div> --}}
 
 <!-- Export Options -->
-<div class="bg-white rounded-2xl p-4 card-shadow mb-6">
+{{-- <div class="bg-white rounded-2xl p-4 card-shadow mb-6">
     <div class="flex space-x-2">
         <button class="export-btn bg-red-500 text-white flex-1 px-4 py-3 rounded-xl text-sm flex items-center justify-center hover:bg-red-600 transition">
             <i class="fas fa-file-pdf mr-2"></i>PDF
@@ -46,7 +46,7 @@
             <i class="fas fa-users mr-2"></i>All Group
         </button>
     </div>
-</div>
+</div> --}}
 
 <!-- Search Bar -->
 <div class="bg-white rounded-2xl p-4 card-shadow mb-6">

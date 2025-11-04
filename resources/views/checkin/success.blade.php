@@ -133,4 +133,42 @@
     }
 </style>
 @endpush
+
+@push('scripts')
+<script>
+    // Play success sound when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create success sound
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            // Play two-tone success sound
+            function playTone(frequency, startTime, duration) {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+            }
+
+            // Play success melody (two ascending tones)
+            const now = audioContext.currentTime;
+            playTone(523, now, 0.15);      // C5
+            playTone(659, now + 0.15, 0.25); // E5
+
+        } catch (e) {
+            console.log('Could not play success sound:', e);
+        }
+    });
+</script>
+@endpush
 @endsection
