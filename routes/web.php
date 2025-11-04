@@ -10,6 +10,7 @@ use App\Http\Controllers\SouvenirController;
 use App\Http\Controllers\GreetingController;
 use App\Http\Controllers\GuestImportController;
 use App\Http\Controllers\SettingsController;
+use Illuminate\Support\Facades\Artisan;
 
 // Guest routes
 Route::get('/', function () {
@@ -65,3 +66,25 @@ Route::get('/whatsapp/undangan/{qrCode}', function($qrCode) {
     $event = $guest->event;
     return view('public.qr-download', compact('guest', 'event'));
 })->name('whatsapp.qr-download');
+
+// Migrate
+Route::get('/run-migrate', function () {
+    Artisan::call('migrate', ['--force' => true]);
+    return '<h1>✅ Migration Success!</h1><pre>' . Artisan::output() . '</pre><br><a href="/">Back</a>';
+});
+
+// Clear Cache
+Route::get('/clear-cache', function () {
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    return '<h1>✅ Cache Cleared!</h1><a href="/">Back</a>';
+});
+
+// Optimize
+Route::get('/optimize', function () {
+    Artisan::call('config:cache');
+    Artisan::call('route:cache');
+    return '<h1>✅ Optimized!</h1><a href="/">Back</a>';
+});
