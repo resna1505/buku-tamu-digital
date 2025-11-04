@@ -76,16 +76,29 @@ class GuestController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'whatsapp' => 'nullable|string|max:20',
-            'table_number' => 'nullable|string|max:50',
+            // Data Mahasiswa
+            'student_name' => 'required|string|max:255',
+            'npm' => 'required|string|max:50',
+            'faculty' => 'required|string|max:100',
+            'study_program' => 'required|string|max:100',
+            'email' => 'nullable|email|max:255',
+            'whatsapp' => 'required|string|max:20',
+            'payment_proof' => 'nullable|url',
+
+            // Data Tamu
+            'guest_1_name' => 'required|string|max:255',
+            'guest_2_name' => 'nullable|string|max:255',
+
+            // Pengaturan
             'is_vip' => 'required|boolean',
             'group_id' => 'required|exists:guest_groups,id',
-            'guests_count' => 'nullable|integer|min:1',
         ], [
-            'name.required' => 'Nama tamu harus diisi',
-            'address.required' => 'Alamat/keterangan harus diisi',
+            'student_name.required' => 'Nama mahasiswa harus diisi',
+            'npm.required' => 'NPM harus diisi',
+            'faculty.required' => 'Fakultas harus dipilih',
+            'study_program.required' => 'Program studi harus diisi',
+            'whatsapp.required' => 'Nomor WhatsApp harus diisi',
+            'guest_1_name.required' => 'Nama Tamu 1 harus diisi',
             'is_vip.required' => 'Status VIP harus dipilih',
             'group_id.required' => 'Grup tamu harus dipilih',
             'group_id.exists' => 'Grup tamu tidak valid',
@@ -98,17 +111,44 @@ class GuestController extends Controller
                 ->with('error', 'Tidak ada event aktif.');
         }
 
-        $validated['event_id'] = $event->id;
-        $validated['qr_code'] = 'GUEST-' . strtoupper(Str::random(10));
-        $validated['is_invited'] = true;
-        $validated['guests_count'] = $validated['guests_count'] ?? 1;
+        // Format nomor WhatsApp
+        $phone = preg_replace('/\s+/', '', $validated['whatsapp']);
+        if (substr($phone, 0, 1) === '0') {
+            $phone = '62' . substr($phone, 1);
+        } elseif (substr($phone, 0, 2) !== '62') {
+            $phone = '62' . $phone;
+        }
 
-        $guest = Guest::create($validated);
+        // Hitung jumlah tamu
+        $guestCount = !empty($validated['guest_2_name']) ? 2 : 1;
+
+        $guestData = [
+            'event_id' => $event->id,
+            'name' => $validated['student_name'], // Nama mahasiswa sebagai name utama
+            'student_name' => $validated['student_name'],
+            'npm' => $validated['npm'],
+            'faculty' => $validated['faculty'],
+            'study_program' => $validated['study_program'],
+            'email' => $validated['email'] ?? null,
+            'whatsapp' => $phone,
+            'payment_proof' => $validated['payment_proof'] ?? null,
+            'guest_1_name' => $validated['guest_1_name'],
+            'guest_2_name' => $validated['guest_2_name'] ?? null,
+            'address' => '-', // Default
+            'is_vip' => $validated['is_vip'],
+            'group_id' => $validated['group_id'],
+            'is_invited' => true,
+            'guests_count' => $guestCount,
+            'qr_code' => 'GUEST-' . strtoupper(Str::random(10)),
+            'registration_date' => now(),
+        ];
+
+        $guest = Guest::create($guestData);
 
         // TODO: Generate QR Code image here using QRCodeService
 
         return redirect()->route('guests.index')
-            ->with('success', 'Tamu "' . $guest->name . '" berhasil ditambahkan!');
+            ->with('success', 'Data wisuda "' . $guest->name . '" dengan ' . $guestCount . ' tamu berhasil ditambahkan!');
     }
 
     /**

@@ -16,139 +16,249 @@
     <form method="POST" action="{{ route('guests.store') }}" id="guestForm">
         @csrf
 
-        <!-- Nama Tamu -->
+        <!-- Info Data Mahasiswa -->
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+            <h3 class="font-semibold text-blue-900 mb-2">
+                <i class="fas fa-user-graduate mr-2"></i>Data Mahasiswa
+            </h3>
+            <p class="text-sm text-blue-700">Isi data mahasiswa yang wisuda</p>
+        </div>
+
+        <!-- Nama Mahasiswa -->
         <div class="mb-6">
             <label class="block text-gray-700 font-semibold mb-2">
-                Nama Tamu <span class="text-red-500">*</span>
+                Nama Lengkap Mahasiswa/i <span class="text-red-500">*</span>
             </label>
             <input
                 type="text"
-                name="name"
-                value="{{ old('name') }}"
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('name') border-red-500 @enderror"
-                placeholder="Isikan Nama Tamu"
+                name="student_name"
+                value="{{ old('student_name') }}"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('student_name') border-red-500 @enderror"
+                placeholder="Nama lengkap mahasiswa"
                 required
             >
-            @error('name')
+            @error('student_name')
             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror
         </div>
 
-        <!-- Alamat / Keterangan -->
-        <div class="mb-6">
-            <label class="block text-gray-700 font-semibold mb-2">
-                Alamat / Keterangan Lain <span class="text-red-500">*</span>
-            </label>
-            <input
-                type="text"
-                name="address"
-                value="{{ old('address') }}"
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('address') border-red-500 @enderror"
-                placeholder="Isikan (-) Jika nihil"
-                required
-            >
-            @error('address')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- NPM -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                    NPM <span class="text-red-500">*</span>
+                </label>
+                <input
+                    type="text"
+                    name="npm"
+                    value="{{ old('npm') }}"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('npm') border-red-500 @enderror"
+                    placeholder="123456789"
+                    required
+                >
+                @error('npm')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                    Email
+                </label>
+                <input
+                    type="email"
+                    name="email"
+                    value="{{ old('email') }}"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('email') border-red-500 @enderror"
+                    placeholder="mahasiswa@example.com"
+                >
+                @error('email')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Fakultas -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                    Fakultas <span class="text-red-500">*</span>
+                </label>
+                <select
+                    name="faculty"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('faculty') border-red-500 @enderror"
+                    required
+                >
+                    <option value="">Pilih Fakultas</option>
+                    <option value="Teknik" {{ old('faculty') == 'Teknik' ? 'selected' : '' }}>Teknik</option>
+                    <option value="Ekonomi" {{ old('faculty') == 'Ekonomi' ? 'selected' : '' }}>Ekonomi</option>
+                    <option value="Hukum" {{ old('faculty') == 'Hukum' ? 'selected' : '' }}>Hukum</option>
+                    <option value="FISIP" {{ old('faculty') == 'FISIP' ? 'selected' : '' }}>FISIP</option>
+                </select>
+                @error('faculty')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Program Studi -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                    Program Studi <span class="text-red-500">*</span>
+                </label>
+                <input
+                    type="text"
+                    name="study_program"
+                    value="{{ old('study_program') }}"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('study_program') border-red-500 @enderror"
+                    placeholder="Contoh: S1 SISTEM INFORMASI"
+                    required
+                >
+                @error('study_program')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
         </div>
 
         <!-- Nomor WhatsApp -->
         <div class="mb-6">
             <label class="block text-gray-700 font-semibold mb-2">
-                Nomor WhatsApp
+                Nomor WhatsApp (Aktif) <span class="text-red-500">*</span>
             </label>
             <input
                 type="text"
                 name="whatsapp"
                 value="{{ old('whatsapp') }}"
                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('whatsapp') border-red-500 @enderror"
-                placeholder="Contoh: 628971851xxx"
+                placeholder="628123456789"
+                required
             >
             @error('whatsapp')
             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror
             <p class="text-sm text-gray-500 mt-1">
-                <i class="fas fa-info-circle mr-1"></i>Format: 628971851xxx (tanpa tanda +)
+                <i class="fas fa-info-circle mr-1"></i>Format: 628123456789 (tanpa spasi)
             </p>
         </div>
 
-        <!-- Nomor Meja -->
+        <!-- Divider -->
+        <hr class="my-8 border-gray-200">
+
+        <!-- Info Data Tamu -->
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+            <h3 class="font-semibold text-green-900 mb-2">
+                <i class="fas fa-users mr-2"></i>Data Tamu Undangan
+            </h3>
+            <p class="text-sm text-green-700">Orang tua / Wali / Saudara yang akan hadir</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Tamu 1 -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                    Nama Tamu 1 (Ayah/Ibu/Wali) <span class="text-red-500">*</span>
+                </label>
+                <input
+                    type="text"
+                    name="guest_1_name"
+                    value="{{ old('guest_1_name') }}"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('guest_1_name') border-red-500 @enderror"
+                    placeholder="Nama lengkap tamu 1"
+                    required
+                >
+                @error('guest_1_name')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Tamu 2 -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                    Nama Tamu 2 (Ayah/Ibu/Wali)
+                </label>
+                <input
+                    type="text"
+                    name="guest_2_name"
+                    value="{{ old('guest_2_name') }}"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('guest_2_name') border-red-500 @enderror"
+                    placeholder="Nama lengkap tamu 2 (opsional)"
+                >
+                @error('guest_2_name')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <hr class="my-8 border-gray-200">
+
+        <!-- Info Pengaturan Tambahan -->
+        <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6">
+            <h3 class="font-semibold text-purple-900 mb-2">
+                <i class="fas fa-cog mr-2"></i>Pengaturan Tambahan
+            </h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Grup Tamu -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                    Grup Tamu <span class="text-red-500">*</span>
+                </label>
+                <select
+                    name="group_id"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('group_id') border-red-500 @enderror"
+                    required
+                >
+                    <option value="">Pilih Grup</option>
+                    @foreach($groups ?? [] as $group)
+                    <option value="{{ $group->id }}" {{ old('group_id') == $group->id ? 'selected' : '' }}>
+                        {{ $group->name }}
+                    </option>
+                    @endforeach
+                </select>
+                @error('group_id')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Tamu VIP -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                    Tamu VIP? <span class="text-red-500">*</span>
+                </label>
+                <select
+                    name="is_vip"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('is_vip') border-red-500 @enderror"
+                    required
+                >
+                    <option value="0" {{ old('is_vip') == '0' ? 'selected' : '' }}>Tidak</option>
+                    <option value="1" {{ old('is_vip') == '1' ? 'selected' : '' }}>Ya</option>
+                </select>
+                @error('is_vip')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+
+        <!-- Bukti Pembayaran (Optional) -->
         <div class="mb-6">
             <label class="block text-gray-700 font-semibold mb-2">
-                Nomor Meja
+                Link Bukti Pembayaran
             </label>
             <input
-                type="text"
-                name="table_number"
-                value="{{ old('table_number') }}"
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('table_number') border-red-500 @enderror"
-                placeholder="Nomor Meja"
+                type="url"
+                name="payment_proof"
+                value="{{ old('payment_proof') }}"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('payment_proof') border-red-500 @enderror"
+                placeholder="https://drive.google.com/..."
             >
-            @error('table_number')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <!-- Tamu VIP -->
-        <div class="mb-6">
-            <label class="block text-gray-700 font-semibold mb-2">
-                Tamu VIP? <span class="text-red-500">*</span>
-            </label>
-            <select
-                name="is_vip"
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('is_vip') border-red-500 @enderror"
-                required
-            >
-                <option value="0" {{ old('is_vip') == '0' ? 'selected' : '' }}>Tidak</option>
-                <option value="1" {{ old('is_vip') == '1' ? 'selected' : '' }}>Ya</option>
-            </select>
-            @error('is_vip')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <!-- Grup Tamu -->
-        <div class="mb-6">
-            <label class="block text-gray-700 font-semibold mb-2">
-                Grup Tamu <span class="text-red-500">*</span>
-            </label>
-            <select
-                name="group_id"
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('group_id') border-red-500 @enderror"
-                required
-            >
-                <option value="">Pilih Grup</option>
-                @foreach($groups ?? [] as $group)
-                <option value="{{ $group->id }}" {{ old('group_id') == $group->id ? 'selected' : '' }}>
-                    {{ $group->name }}
-                </option>
-                @endforeach
-            </select>
-            @error('group_id')
+            @error('payment_proof')
             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror
             <p class="text-sm text-gray-500 mt-1">
-                Jika belum ada grup tamu, silakan
-                <a href="#" id="createGroupLink" class="text-purple-600 font-semibold">buat grup tamu</a>
+                <i class="fas fa-info-circle mr-1"></i>Link Google Drive atau layanan cloud lainnya
             </p>
-        </div>
-
-        <!-- Jumlah Tamu -->
-        <div class="mb-6">
-            <label class="block text-gray-700 font-semibold mb-2">
-                Jumlah Tamu
-            </label>
-            <input
-                type="number"
-                name="guests_count"
-                value="{{ old('guests_count', 1) }}"
-                min="1"
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('guests_count') border-red-500 @enderror"
-                placeholder="1"
-            >
-            @error('guests_count')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
         </div>
 
         <!-- Action Buttons -->
@@ -172,8 +282,8 @@
 
 <!-- Import Excel Button -->
 <div class="mt-6">
-    <button id="importExcelBtn" class="w-full bg-green-500 text-white py-4 rounded-xl font-semibold text-lg hover:bg-green-600 transition">
-        <i class="fas fa-file-excel mr-2"></i>Import dari Excel
+    <button id="importExcelBtn" class="w-full bg-green-500 text-white py-4 rounded-xl font-semibold text-lg hover:bg-green-600 transition shadow-lg">
+        <i class="fas fa-file-excel mr-2"></i>Import dari Excel (Batch)
     </button>
 </div>
 
@@ -181,26 +291,30 @@
 <script>
     // Form validation
     document.getElementById('guestForm').addEventListener('submit', function(e) {
-        const name = document.querySelector('input[name="name"]').value;
-        const address = document.querySelector('input[name="address"]').value;
+        const studentName = document.querySelector('input[name="student_name"]').value;
+        const npm = document.querySelector('input[name="npm"]').value;
+        const faculty = document.querySelector('select[name="faculty"]').value;
+        const guest1 = document.querySelector('input[name="guest_1_name"]').value;
         const group = document.querySelector('select[name="group_id"]').value;
+        const whatsapp = document.querySelector('input[name="whatsapp"]').value;
 
-        if (!name || !address || !group) {
+        if (!studentName || !npm || !faculty || !guest1 || !group || !whatsapp) {
             e.preventDefault();
-            alert('Mohon lengkapi semua field yang wajib diisi!');
+            alert('Mohon lengkapi semua field yang wajib diisi (*)!');
             return false;
         }
-    });
-
-    // Create group link
-    document.getElementById('createGroupLink').addEventListener('click', function(e) {
-        e.preventDefault();
-        alert('Fitur tambah grup akan segera tersedia!');
     });
 
     // Import Excel button
     document.getElementById('importExcelBtn').addEventListener('click', function() {
         window.location.href = '{{ route("guests.import") }}';
+    });
+
+    // Auto-count guests
+    document.querySelector('input[name="guest_2_name"]').addEventListener('input', function() {
+        const guest2Value = this.value.trim();
+        // Jika ada tamu 2, jumlah = 2, kalau tidak = 1
+        // (guests_count dihandle otomatis di controller)
     });
 </script>
 @endpush

@@ -32,7 +32,6 @@ Route::middleware(['auth'])->group(function () {
 
     // Guests Management
     Route::resource('guests', GuestController::class);
-    // Route::post('guests/import', [GuestController::class, 'import'])->name('guests.import');
     Route::get('guests/export/pdf', [GuestController::class, 'exportPdf'])->name('guests.export.pdf');
     Route::get('guests/export/excel', [GuestController::class, 'exportExcel'])->name('guests.export.excel');
     Route::post('guests/{guest}/send-whatsapp', [GuestController::class, 'sendWhatsApp'])->name('guests.send-whatsapp');
