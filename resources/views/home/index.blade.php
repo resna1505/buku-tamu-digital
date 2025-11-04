@@ -85,12 +85,12 @@
         </a> --}}
 
         <!-- Layar Sapa -->
-        <a href="#" class="flex flex-col items-center p-4 rounded-xl hover:bg-indigo-50 transition">
+        {{-- <a href="#" class="flex flex-col items-center p-4 rounded-xl hover:bg-indigo-50 transition">
             <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-3">
                 <i class="fas fa-tv text-indigo-600 text-2xl"></i>
             </div>
             <span class="text-sm text-center font-medium text-gray-700">Layar Sapa</span>
-        </a>
+        </a> --}}
     </div>
 </div>
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\SouvenirController;
 use App\Http\Controllers\GreetingController;
+use App\Http\Controllers\GuestImportController;
 use App\Http\Controllers\SettingsController;
 
 // Guest routes
@@ -24,9 +25,14 @@ Route::middleware(['auth'])->group(function () {
     // Home
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 
+    Route::get('/guests/import', [GuestImportController::class, 'index'])->name('guests.import');
+    Route::get('/guests/import/template', [GuestImportController::class, 'downloadTemplate'])->name('guests.import.template');
+    Route::post('/guests/import/preview', [GuestImportController::class, 'preview'])->name('guests.import.preview');
+    Route::post('/guests/import/process', [GuestImportController::class, 'import'])->name('guests.import.process');
+
     // Guests Management
     Route::resource('guests', GuestController::class);
-    Route::post('guests/import', [GuestController::class, 'import'])->name('guests.import');
+    // Route::post('guests/import', [GuestController::class, 'import'])->name('guests.import');
     Route::get('guests/export/pdf', [GuestController::class, 'exportPdf'])->name('guests.export.pdf');
     Route::get('guests/export/excel', [GuestController::class, 'exportExcel'])->name('guests.export.excel');
     Route::post('guests/{guest}/send-whatsapp', [GuestController::class, 'sendWhatsApp'])->name('guests.send-whatsapp');

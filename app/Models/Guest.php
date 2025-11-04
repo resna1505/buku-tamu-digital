@@ -9,7 +9,9 @@ class Guest extends Model
     protected $fillable = [
         'event_id', 'group_id', 'name', 'address', 'whatsapp',
         'table_number', 'guests_count', 'is_vip', 'qr_code',
-        'qr_code_path', 'is_invited'
+        'qr_code_path', 'is_invited','student_name', 'npm',
+        'faculty', 'study_program', 'email', 'payment_proof',
+        'registration_date', 'guest_1_name', 'guest_2_name'
     ];
 
     protected $casts = [
