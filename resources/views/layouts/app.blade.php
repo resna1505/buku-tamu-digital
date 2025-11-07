@@ -15,7 +15,7 @@
     <!-- Custom CSS -->
     <style>
         .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f1e78 0%, #1e3a8a 100%);
         }
 
         .card-shadow {
@@ -50,12 +50,12 @@
     <nav class="gradient-bg text-white p-4 shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                {{-- <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                     <i class="fas fa-qrcode text-purple-600 text-xl"></i>
-                </div>
+                </div> --}}
                 <div>
-                    <h1 class="text-xl font-bold">TamuKami</h1>
-                    <p class="text-xs opacity-90">Digital Guest Book</p>
+                    <h1 class="text-xl font-bold">Universitas Batam</h1>
+                    <p class="text-xs opacity-90">E-Invitation Wisuda XXI UNIBA - QR Code</p>
                 </div>
             </div>
 
