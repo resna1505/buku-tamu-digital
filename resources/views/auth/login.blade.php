@@ -11,7 +11,7 @@
 
     <style>
         .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f1e78 0%, #1e3a8a 100%);
             min-height: 100vh;
             position: relative;
             overflow: hidden;
@@ -63,11 +63,12 @@
         <div class="login-card rounded-3xl p-8 w-full max-w-md relative z-10">
             <!-- Logo & Title -->
             <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl mb-4 shadow-lg">
-                    <i class="fas fa-qrcode text-white text-3xl"></i>
+                <!-- Logo tanpa wrapper/border -->
+                <div class="mb-4">
+                    <img src="{{ asset('images/logo-blue.png') }}" alt="TamuKami Logo" class="w-45 h-24 mx-auto">
                 </div>
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">TamuKami</h1>
-                <p class="text-gray-600">Digital Guest Book System</p>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Universitas Batam</h1>
+                <p class="text-gray-600">E-Invitation Wisuda XXI UNIBA - QR Code</p>
             </div>
 
             <!-- Error Messages -->
@@ -151,19 +152,19 @@
             </form>
 
             <!-- Register Link -->
-            <div class="text-center mt-6">
+            {{-- <div class="text-center mt-6">
                 <p class="text-gray-600">
                     Belum punya akun?
                     <a href="#" class="text-purple-600 font-semibold hover:text-purple-800">
                         Daftar Sekarang!
                     </a>
                 </p>
-            </div>
+            </div> --}}
 
             <!-- Footer -->
             <div class="text-center mt-8 pt-6 border-t border-gray-200">
                 <p class="text-sm text-gray-500">
-                    &copy; 2024 TamuKami. All rights reserved.
+                    &copy; 2024 Universitas Batam. All rights reserved.
                 </p>
             </div>
         </div>
