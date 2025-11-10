@@ -45,10 +45,10 @@
 </div>
 
 <!-- Debug Info -->
-<div id="debugInfo" class="mt-6 bg-gray-100 rounded-2xl p-4 text-sm text-gray-600">
+{{-- <div id="debugInfo" class="mt-6 bg-gray-100 rounded-2xl p-4 text-sm text-gray-600">
     <strong>Debug Info:</strong><br>
     <span id="debugText">Menginisialisasi...</span>
-</div>
+</div> --}}
 
 <audio id="successSound" preload="auto">
     <source src="{{ asset('sounds/success.mp3') }}" type="audio/mpeg">
