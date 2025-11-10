@@ -40,7 +40,7 @@
 <!-- Manual Input (Alternative) -->
 <div class="mt-6">
     <button id="manualInputBtn" class="w-full bg-gray-200 text-gray-700 py-4 rounded-xl font-semibold hover:bg-gray-300 transition">
-        <i class="fas fa-keyboard mr-2"></i>Input Manual (Tanpa Scan)
+        <i class="fas fa-keyboard mr-2"></i>Input Manual (Cari berdasarkan Nama)
     </button>
 </div>
 
@@ -52,12 +52,10 @@
 
 <audio id="successSound" preload="auto">
     <source src="{{ asset('sounds/success.mp3') }}" type="audio/mpeg">
-    {{-- <source src="{{ asset('sounds/success.wav') }}" type="audio/wav"> --}}
 </audio>
 
 <audio id="errorSound" preload="auto">
     <source src="{{ asset('sounds/error.mp3') }}" type="audio/mpeg">
-    {{-- <source src="{{ asset('sounds/error.wav') }}" type="audio/wav"> --}}
 </audio>
 
 @push('styles')
@@ -324,7 +322,7 @@
                 // Play success sound
                 playSuccessSound();
 
-                updateStatus('✓ Check-in berhasil! Mengalihkan...', 'success');
+                updateStatus('✓ Check-in berhasil! (' + result.check_in_number + '/2) Mengalihkan...', 'success');
 
                 // Add success animation to the card
                 document.querySelector('.card-shadow').classList.add('success-animation');
@@ -347,7 +345,7 @@
                 setTimeout(() => {
                     isScanning = true;
                     initScanner();
-                }, 2000);
+                }, 3000);
             }
         } catch (error) {
             console.error('Check-in error:', error);
@@ -371,7 +369,6 @@
         }
     }
 
-
     // Stop camera button
     document.getElementById('stopCameraBtn').addEventListener('click', async () => {
         if (html5QrCode && isScanning) {
@@ -394,15 +391,78 @@
         }, 500);
     });
 
-    // Manual input
-    document.getElementById('manualInputBtn').addEventListener('click', () => {
-        const guestId = prompt('Masukkan ID/Kode Tamu:');
-        if (guestId) {
+    // Manual input - Search by name
+    document.getElementById('manualInputBtn').addEventListener('click', async () => {
+        const guestName = prompt('Masukkan Nama Tamu:');
+        if (guestName && guestName.trim()) {
             if (html5QrCode && isScanning) {
-                html5QrCode.stop();
+                await html5QrCode.stop();
                 isScanning = false;
             }
-            checkInGuest(guestId);
+
+            updateStatus('Mencari tamu...', 'info');
+
+            try {
+                const response = await fetch('{{ route("checkin.search") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ name: guestName.trim() })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.guests.length === 1) {
+                        // Langsung check-in jika hanya 1 hasil
+                        checkInGuest(result.guests[0].qr_code);
+                    } else if (result.guests.length > 1) {
+                        // Tampilkan pilihan jika ada beberapa hasil
+                        let options = 'Ditemukan beberapa tamu:\n\n';
+                        result.guests.forEach((guest, index) => {
+                            const faculty = guest.faculty || '';
+                            const program = guest.study_program || '';
+                            const info = faculty && program ? `${faculty}, ${program}` : guest.address || 'Tidak ada keterangan';
+                            options += `${index + 1}. ${guest.name}\n   ${info}\n\n`;
+                        });
+                        options += 'Masukkan nomor pilihan (1-' + result.guests.length + '):';
+
+                        const choice = prompt(options);
+                        const choiceIndex = parseInt(choice) - 1;
+
+                        if (choiceIndex >= 0 && choiceIndex < result.guests.length) {
+                            checkInGuest(result.guests[choiceIndex].qr_code);
+                        } else {
+                            updateStatus('Pilihan tidak valid', 'error');
+                            setTimeout(() => {
+                                isScanning = true;
+                                initScanner();
+                            }, 2000);
+                        }
+                    } else {
+                        updateStatus('Tamu tidak ditemukan', 'error');
+                        setTimeout(() => {
+                            isScanning = true;
+                            initScanner();
+                        }, 2000);
+                    }
+                } else {
+                    updateStatus(result.message || 'Tamu tidak ditemukan', 'error');
+                    setTimeout(() => {
+                        isScanning = true;
+                        initScanner();
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                updateStatus('Error mencari tamu', 'error');
+                setTimeout(() => {
+                    isScanning = true;
+                    initScanner();
+                }, 2000);
+            }
         }
     });
 
