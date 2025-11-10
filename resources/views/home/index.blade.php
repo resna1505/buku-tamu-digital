@@ -25,7 +25,7 @@
 <!-- Statistics Cards -->
 <div class="grid grid-cols-3 gap-4 mb-6">
     <div class="bg-white rounded-2xl p-4 card-shadow text-center">
-        <div class="text-3xl font-bold text-purple-600 mb-1">{{ $stats['invited'] ?? 0 }}</div>
+        <div class="text-3xl font-bold text-orange-600 mb-1">{{ $stats['invited'] ?? 0 }}</div>
         <div class="text-xs text-gray-600">Undangan</div>
     </div>
 
@@ -46,9 +46,9 @@
 
     <div class="grid grid-cols-3 gap-4">
         <!-- Data Tamu -->
-        <a href="{{ route('guests.index') }}" class="flex flex-col items-center p-4 rounded-xl hover:bg-purple-50 transition">
-            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-3">
-                <i class="fas fa-users text-purple-600 text-2xl"></i>
+        <a href="{{ route('guests.index') }}" class="flex flex-col items-center p-4 rounded-xl hover:bg-orange-50 transition">
+            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-3">
+                <i class="fas fa-users text-orange-600 text-2xl"></i>
             </div>
             <span class="text-sm text-center font-medium text-gray-700">Data Tamu</span>
         </a>
@@ -67,6 +67,13 @@
                 <i class="fas fa-clipboard-check text-blue-600 text-2xl"></i>
             </div>
             <span class="text-sm text-center font-medium text-gray-700">Kehadiran</span>
+        </a>
+
+        <a href="{{ route('monitor.checkin') }}" class="flex flex-col items-center p-4 rounded-xl hover:bg-purple-50 transition">
+            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-3">
+                <i class="fas fa-tv text-purple-600 text-2xl"></i>
+            </div>
+            <span class="text-sm text-center font-medium text-gray-700">Monitor Check-In</span>
         </a>
 
         <!-- Souvenir -->

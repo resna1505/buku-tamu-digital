@@ -149,7 +149,7 @@
                     </div>
 
                     <!-- Guest Count Selector -->
-                    <div class="text-center mb-6">
+                    {{-- <div class="text-center mb-6">
                         <p class="text-sm opacity-90 mb-3">JUMLAH TAMU</p>
                         <select id="guestCountSelect" class="bg-white text-purple-900 px-6 py-3 rounded-lg font-bold text-lg w-48 mx-auto">
                             <option value="1">1 TAMU</option>
@@ -158,21 +158,12 @@
                             <option value="4">4 TAMU</option>
                             <option value="5">5 TAMU</option>
                         </select>
-                    </div>
+                    </div> --}}
 
                     <!-- Check In Button -->
                     <button id="checkInBtn" class="w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white py-4 rounded-xl font-bold text-xl shadow-lg hover:shadow-xl transition transform hover:scale-105">
                         CHECK IN
                     </button>
-
-                    <!-- Powered By -->
-                    <div class="text-center mt-6 opacity-75">
-                        <p class="text-xs mb-2">POWERED BY :</p>
-                        <div class="flex items-center justify-center space-x-2">
-                            <i class="fas fa-qrcode text-lg"></i>
-                            <span class="font-bold">TAMU KAMI</span>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Ticket Bottom Notches -->

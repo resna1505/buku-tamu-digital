@@ -9,6 +9,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\SouvenirController;
 use App\Http\Controllers\GreetingController;
 use App\Http\Controllers\GuestImportController;
+use App\Http\Controllers\MonitorController;
 use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Artisan;
 
@@ -59,6 +60,10 @@ Route::middleware(['auth'])->group(function () {
     // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+
+
+    Route::get('/monitor/checkin', [MonitorController::class, 'checkIn'])->name('monitor.checkin');
+    Route::get('/monitor/latest', [MonitorController::class, 'getLatestCheckIns'])->name('monitor.latest');
 });
 
 // Public WhatsApp QR Download Page
