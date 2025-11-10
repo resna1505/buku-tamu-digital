@@ -38,12 +38,12 @@
         <button id="bulkWhatsAppBtn" class="export-btn bg-green-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-green-600 transition">
             <i class="fab fa-whatsapp mr-2"></i>Kirim WA Massal
         </button>
-        <button id="exportPdfBtn" class="export-btn bg-red-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-red-600 transition">
+        {{-- <button id="exportPdfBtn" class="export-btn bg-red-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-red-600 transition">
             <i class="fas fa-file-pdf mr-2"></i>PDF
         </button>
         <button id="exportExcelBtn" class="export-btn bg-blue-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-blue-600 transition">
             <i class="fas fa-file-excel mr-2"></i>Excel
-        </button>
+        </button> --}}
     </div>
 </div>
 
