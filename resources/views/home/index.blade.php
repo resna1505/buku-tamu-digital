@@ -5,20 +5,21 @@
 @section('content')
 <!-- Event Info Card -->
 <div class="gradient-bg text-white rounded-3xl p-6 mb-6 card-shadow">
-    <div class="flex items-center justify-center mb-4">
-        <div class="w-24 h-24 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center backdrop-blur-lg">
-            <i class="fas fa-qrcode text-white text-4xl"></i>
+    <div class="text-center mb-8">
+        <!-- Logo tanpa wrapper/border -->
+        <div class="mb-4">
+            <img src="{{ asset('images/logo-white.png') }}" alt="TamuKami Logo" class="w-60 h-40 mx-auto">
         </div>
     </div>
 
-    <div class="text-center">
+    {{-- <div class="text-center">
         <p class="text-sm opacity-90 mb-1">{{ $event->type ?? 'Demo Event' }}</p>
         <h2 class="text-2xl font-bold mb-2">{{ $event->name ?? 'Demo Event' }}</h2>
         <p class="text-sm opacity-90">
             <i class="fas fa-calendar-alt mr-2"></i>
             {{ $event->date ?? now()->format('l, d F Y') }}
         </p>
-    </div>
+    </div> --}}
 </div>
 
 <!-- Statistics Cards -->
