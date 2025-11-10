@@ -69,12 +69,18 @@
             Grup Tamu Default <span class="text-red-500">*</span>
         </label>
         <select id="defaultGroupSelect"
-                class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-purple-500">
+            class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-purple-500">
             <option value="">Pilih Grup Tamu</option>
             @foreach($groups as $group)
-            <option value="{{ $group->id }}">{{ $group->name }}</option>
+                <option
+                    value="{{ $group->id }}"
+                    {{ $loop->first && old('group_id') == null ? 'selected' : '' }}
+                >
+                    {{ $group->name }}
+                </option>
             @endforeach
         </select>
+
         <p class="text-sm text-gray-500 mt-1">
             <i class="fas fa-info-circle mr-1"></i>Semua tamu yang diimport akan masuk ke grup ini
         </p>

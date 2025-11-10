@@ -94,7 +94,8 @@
                     <option value="Teknik" {{ old('faculty') == 'Teknik' ? 'selected' : '' }}>Teknik</option>
                     <option value="Ekonomi" {{ old('faculty') == 'Ekonomi' ? 'selected' : '' }}>Ekonomi</option>
                     <option value="Hukum" {{ old('faculty') == 'Hukum' ? 'selected' : '' }}>Hukum</option>
-                    <option value="FISIP" {{ old('faculty') == 'FISIP' ? 'selected' : '' }}>FISIP</option>
+                    <option value="Kedokteran" {{ old('faculty') == 'Kedokteran' ? 'selected' : '' }}>Kedokteran</option>
+                    <option value="Ilmu Kesehatan" {{ old('faculty') == 'Ilmu Kesehatan' ? 'selected' : '' }}>Ilmu Kesehatan</option>
                 </select>
                 @error('faculty')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -202,25 +203,34 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <!-- Grup Tamu -->
             <div>
-                <label class="block text-gray-700 font-semibold mb-2">
-                    Grup Tamu <span class="text-red-500">*</span>
-                </label>
-                <select
-                    name="group_id"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('group_id') border-red-500 @enderror"
-                    required
+    <label class="block text-gray-700 font-semibold mb-2">
+        Grup Tamu <span class="text-red-500">*</span>
+    </label>
+    <select
+        name="group_id"
+        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 @error('group_id') border-red-500 @enderror"
+        required
+    >
+        @if(!empty($groups))
+            <option value="">Pilih Grup</option>
+            @foreach($groups as $index => $group)
+                <option
+                    value="{{ $group->id }}"
+                    {{ old('group_id', $loop->first ? $group->id : '') == $group->id ? 'selected' : '' }}
                 >
-                    <option value="">Pilih Grup</option>
-                    @foreach($groups ?? [] as $group)
-                    <option value="{{ $group->id }}" {{ old('group_id') == $group->id ? 'selected' : '' }}>
-                        {{ $group->name }}
-                    </option>
-                    @endforeach
-                </select>
-                @error('group_id')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
+                    {{ $group->name }}
+                </option>
+            @endforeach
+        @else
+            <option value="">Tidak ada grup tersedia</option>
+        @endif
+    </select>
+
+    @error('group_id')
+    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+    @enderror
+</div>
+
 
             <!-- Tamu VIP -->
             <div>
