@@ -121,7 +121,8 @@
                 </div>
                 <div>
                     <h4 class="font-semibold text-gray-800">{{ $guest->name }}</h4>
-                    <p class="text-sm text-gray-500">{{ $guest->address }}</p>
+                    <p class="text-sm text-gray-500">{{ $guest->faculty }} | {{ $guest->study_program }}</p>
+                    <p class="text-sm text-gray-500">{{ $guest->guests_count }} Orang</p>
                 </div>
             </div>
 

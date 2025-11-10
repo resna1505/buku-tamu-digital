@@ -41,7 +41,7 @@
                         </span>
                         @endif
                     </div>
-                    <p class="text-sm text-gray-600">{{ $guest->address }}</p>
+                    <p class="text-sm text-gray-600">{{ $guest->faculty }} | {{ $guest->study_program }}</p>
                     <p class="text-xs text-gray-500 mt-1">
                         <i class="fas fa-users mr-1"></i>{{ $guest->guests_count }} Orang
                     </p>

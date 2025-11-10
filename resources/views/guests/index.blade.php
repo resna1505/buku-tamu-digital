@@ -80,7 +80,8 @@
                         </span>
                         @endif
                     </div>
-                    <p class="text-sm text-gray-500">{{ $guest->address }} | {{ $guest->guests_count }} Orang</p>
+                    <p class="text-sm text-gray-500">{{ $guest->faculty }} | {{ $guest->study_program }}</p>
+                    <p class="text-sm text-gray-500">{{ $guest->guests_count }} Orang</p>
                     <p class="text-xs text-gray-400">{{ $guest->created_at->format('d/m/Y H:i') }}</p>
                 </div>
             </div>
