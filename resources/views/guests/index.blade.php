@@ -38,6 +38,14 @@
         <button id="bulkWhatsAppBtn" class="export-btn bg-green-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-green-600 transition">
             <i class="fab fa-whatsapp mr-2"></i>Kirim WA Massal
         </button>
+        <a href="{{ route('guests.export.pdf') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" 
+           class="export-btn bg-red-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-red-600 transition">
+            <i class="fas fa-file-pdf mr-2"></i>Export PDF
+        </a>
+        <a href="{{ route('guests.export.excel') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" 
+           class="export-btn bg-blue-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-blue-600 transition">
+            <i class="fas fa-file-excel mr-2"></i>Export Excel
+        </a>
     </div>
 </div>
 
@@ -456,7 +464,7 @@
                 <!-- Header with Event Info (Always Blue) -->
                 <div style="background-color: #1e3a8a; color: #ffffff; padding: 32px; text-align: center; border-radius: 24px; margin: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                     <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">Selamat Datang di</h2>
-                    <h3 style="font-size: 24px; font-weight: bold; line-height: 1.3;">Acara Wisuda-XXI, T/A: 2024/2025</h3>
+                    <h3 style="font-size: 24px; font-weight: bold; line-height: 1.3;">Acara Wisuda-XXII, T/A: 2024/2025</h3>
                 </div>
 
                 <!-- Guest Info -->
@@ -485,17 +493,34 @@
             </div>
         `;
 
-        document.getElementById('qrPrintContent').innerHTML = content;
+        // CRITICAL FIX: Clear ALL previous content first
+        const printContent = document.getElementById('qrPrintContent');
+        printContent.innerHTML = '';  // Clear completely first
 
-        // Generate QR Code
-        new QRCode(document.getElementById('qrcodeCanvas'), {
-            text: qrCode,
-            width: 300,
-            height: 300,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
+        // Then set new content
+        document.querySelectorAll('#qrcodeCanvas').forEach(el => el.remove());
+
+        printContent.innerHTML = content;
+
+        // Wait for DOM to settle before generating QR
+        setTimeout(() => {
+            const qrContainer = document.getElementById('qrcodeCanvas');
+
+            // Ensure container is completely empty
+            if (qrContainer) {
+                qrContainer.innerHTML = '';
+
+                // Generate NEW QR Code
+                new QRCode(qrContainer, {
+                    text: qrCode,
+                    width: 300,
+                    height: 300,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+        }, 300);
     }
 
     function printQRCode() {

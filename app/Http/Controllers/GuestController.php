@@ -8,6 +8,7 @@ use App\Models\GuestGroup;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class GuestController extends Controller
 {
@@ -340,21 +341,190 @@ class GuestController extends Controller
     /**
      * Export guests to PDF.
      */
-    public function exportPdf()
+    public function exportPdf(Request $request)
     {
-        // TODO: Implement PDF export
-        return redirect()->route('guests.index')
-            ->with('info', 'Fitur export PDF akan segera tersedia!');
+        $event = Event::where('is_active', true)->first();
+
+        if (!$event) {
+            return redirect()->route('guests.index')
+                ->with('error', 'Tidak ada event aktif.');
+        }
+
+        // Build query with same filters as index
+        $query = Guest::where('event_id', $event->id)
+            ->with(['group', 'attendance']);
+
+        // Apply search filter
+        $search = $request->get('search');
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('student_name', 'like', '%' . $search . '%')
+                  ->orWhere('npm', 'like', '%' . $search . '%')
+                  ->orWhere('faculty', 'like', '%' . $search . '%')
+                  ->orWhere('study_program', 'like', '%' . $search . '%')
+                  ->orWhere('guest_1_name', 'like', '%' . $search . '%')
+                  ->orWhere('guest_2_name', 'like', '%' . $search . '%')
+                  ->orWhere('whatsapp', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Apply attendance filter
+        $filter = $request->get('filter');
+        if ($filter === 'hadir') {
+            $query->whereHas('attendance');
+        } elseif ($filter === 'belum') {
+            $query->whereDoesntHave('attendance');
+        } elseif ($filter === 'group') {
+            $groupId = $request->get('group_id');
+            if ($groupId) {
+                $query->where('group_id', $groupId);
+            }
+        }
+
+        // Get ALL guests (not paginated) for export
+        $guests = $query->latest()->get();
+
+        if ($guests->isEmpty()) {
+            return redirect()->route('guests.index')
+                ->with('warning', 'Tidak ada data tamu untuk di-export.');
+        }
+
+        // Create HTML for PDF
+        $html = '<h1 style="text-align: center;">Data Tamu ' . $event->name . '</h1>';
+        $html .= '<p style="text-align: center; font-size: 12px;">Tanggal Export: ' . now()->format('d/m/Y H:i') . '</p>';
+        $html .= '<table border="1" cellpadding="8" cellspacing="0" width="100%" style="border-collapse: collapse; font-size: 11px;">';
+        $html .= '<thead><tr style="background-color: #e0e0e0;">';
+        $html .= '<th style="text-align: center;">No</th>';
+        $html .= '<th>Nama Mahasiswa</th>';
+        $html .= '<th style="text-align: center;">NPM</th>';
+        $html .= '<th>Fakultas</th>';
+        $html .= '<th>Program Studi</th>';
+        $html .= '<th>WhatsApp</th>';
+        $html .= '<th>Tamu 1 & 2</th>';
+        $html .= '<th style="text-align: center;">Status</th>';
+        $html .= '</tr></thead><tbody>';
+
+        foreach ($guests as $no => $guest) {
+            $status = $guest->attendance ? 'Hadir' : 'Belum';
+            $tamu = $guest->guest_1_name . ($guest->guest_2_name ? ', ' . $guest->guest_2_name : '');
+            $html .= '<tr>';
+            $html .= '<td style="text-align: center;">' . ($no + 1) . '</td>';
+            $html .= '<td>' . htmlspecialchars($guest->name) . '</td>';
+            $html .= '<td style="text-align: center;">' . htmlspecialchars($guest->npm) . '</td>';
+            $html .= '<td>' . htmlspecialchars($guest->faculty) . '</td>';
+            $html .= '<td>' . htmlspecialchars($guest->study_program) . '</td>';
+            $html .= '<td>' . htmlspecialchars($guest->whatsapp) . '</td>';
+            $html .= '<td>' . htmlspecialchars($tamu) . '</td>';
+            $html .= '<td style="text-align: center;">' . $status . '</td>';
+            $html .= '</tr>';
+        }
+
+        $html .= '</tbody></table>';
+
+        $pdf = Pdf::loadHTML($html);
+        $pdf->setPaper('A4', 'landscape');
+
+        return $pdf->download('Data-Tamu-' . date('Y-m-d-H-i-s') . '.pdf');
     }
 
     /**
      * Export guests to Excel.
      */
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
-        // TODO: Implement Excel export
-        return redirect()->route('guests.index')
-            ->with('info', 'Fitur export Excel akan segera tersedia!');
+        $event = Event::where('is_active', true)->first();
+
+        if (!$event) {
+            return redirect()->route('guests.index')
+                ->with('error', 'Tidak ada event aktif.');
+        }
+
+        // Build query with same filters as index
+        $query = Guest::where('event_id', $event->id)
+            ->with(['group', 'attendance']);
+
+        // Apply search filter
+        $search = $request->get('search');
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('student_name', 'like', '%' . $search . '%')
+                  ->orWhere('npm', 'like', '%' . $search . '%')
+                  ->orWhere('faculty', 'like', '%' . $search . '%')
+                  ->orWhere('study_program', 'like', '%' . $search . '%')
+                  ->orWhere('guest_1_name', 'like', '%' . $search . '%')
+                  ->orWhere('guest_2_name', 'like', '%' . $search . '%')
+                  ->orWhere('whatsapp', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Apply attendance filter
+        $filter = $request->get('filter');
+        if ($filter === 'hadir') {
+            $query->whereHas('attendance');
+        } elseif ($filter === 'belum') {
+            $query->whereDoesntHave('attendance');
+        } elseif ($filter === 'group') {
+            $groupId = $request->get('group_id');
+            if ($groupId) {
+                $query->where('group_id', $groupId);
+            }
+        }
+
+        // Get ALL guests (not paginated) for export
+        $guests = $query->latest()->get();
+
+        if ($guests->isEmpty()) {
+            return redirect()->route('guests.index')
+                ->with('warning', 'Tidak ada data tamu untuk di-export.');
+        }
+
+        // Use PhpSpreadsheet
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Tamu');
+
+        // Headers
+        $headers = ['No', 'Nama Mahasiswa', 'NPM', 'Fakultas', 'Program Studi', 'Email', 'WhatsApp', 'Tamu 1', 'Tamu 2', 'Status', 'Tanggal Daftar'];
+        foreach ($headers as $col => $header) {
+            $sheet->setCellValueByColumnAndRow($col + 1, 1, $header);
+            $sheet->getStyle('A1:K1')->getFont()->setBold(true);
+            $sheet->getStyle('A1:K1')->getFill()
+                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setARGB('FFD3D3D3');
+        }
+
+        // Data
+        $row = 2;
+        foreach ($guests as $no => $guest) {
+            $status = $guest->attendance ? 'Hadir' : 'Belum';
+            $sheet->setCellValue('A' . $row, $no + 1);
+            $sheet->setCellValue('B' . $row, $guest->name);
+            $sheet->setCellValue('C' . $row, $guest->npm);
+            $sheet->setCellValue('D' . $row, $guest->faculty);
+            $sheet->setCellValue('E' . $row, $guest->study_program);
+            $sheet->setCellValue('F' . $row, $guest->email);
+            $sheet->setCellValue('G' . $row, $guest->whatsapp);
+            $sheet->setCellValue('H' . $row, $guest->guest_1_name);
+            $sheet->setCellValue('I' . $row, $guest->guest_2_name);
+            $sheet->setCellValue('J' . $row, $status);
+            $sheet->setCellValue('K' . $row, $guest->created_at->format('d/m/Y H:i'));
+            $row++;
+        }
+
+        // Auto-size columns
+        foreach (range('A', 'K') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Generate file
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $fileName = 'Data-Tamu-' . date('Y-m-d-H-i-s') . '.xlsx';
+        $temp_file = tempnam(sys_get_temp_dir(), $fileName);
+        $writer->save($temp_file);
+
+        return response()->download($temp_file, $fileName)->deleteFileAfterSend(true);
     }
 
     /**

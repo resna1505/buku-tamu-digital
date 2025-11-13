@@ -86,7 +86,7 @@
                 <!-- Header with Event Info (Selalu Biru) -->
                 <div class="header-bg header-text p-8 text-center rounded-3xl mx-6 mt-6 shadow-md">
                     <h2 class="text-2 font-bold mb-2">Selamat Datang di</h2>
-                    <h3 class="text-2xl font-bold leading-tight">Acara Wisuda-XXI, T/A: 2024/2025</h3>
+                    <h3 class="text-2xl font-bold leading-tight">Acara Wisuda-XXII, T/A: 2024/2025</h3>
                     {{-- @if($event && $event->date)
                     <p class="text-lg mt-2 font-semibold">T/A: {{ $event->date->format('Y') }}/{{ $event->date->addYear()->format('Y') }}</p>
                     @else

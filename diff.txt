@@ -1,0 +1,471 @@
+diff --git a/resources/views/guests/index.blade.php b/resources/views/guests/index.blade.php
+index 2e1bd01..16281b7 100644
+--- a/resources/views/guests/index.blade.php
++++ b/resources/views/guests/index.blade.php
+@@ -38,12 +38,6 @@
+         <button id="bulkWhatsAppBtn" class="export-btn bg-green-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-green-600 transition">
+             <i class="fab fa-whatsapp mr-2"></i>Kirim WA Massal
+         </button>
+-        {{-- <button id="exportPdfBtn" class="export-btn bg-red-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-red-600 transition">
+-            <i class="fas fa-file-pdf mr-2"></i>PDF
+-        </button>
+-        <button id="exportExcelBtn" class="export-btn bg-blue-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-blue-600 transition">
+-            <i class="fas fa-file-excel mr-2"></i>Excel
+-        </button> --}}
+     </div>
+ </div>
+ 
+@@ -54,23 +48,38 @@
+             type="text"
+             id="searchInput"
+             class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500"
+-            placeholder="Cari nama tamu..."
++            placeholder="Cari nama tamu, NPM, fakultas... (mencari di semua data)"
++            value="{{ request('search') }}"
+         >
+         <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
++        <div id="searchLoading" class="hidden absolute right-4 top-1/2 transform -translate-y-1/2">
++            <i class="fas fa-spinner fa-spin text-purple-600"></i>
++        </div>
++    </div>
++    <div id="searchInfo" class="mt-2 text-sm text-gray-600 {{ request('search') ? '' : 'hidden' }}">
++        Menampilkan <span id="searchResultCount">{{ $guests->total() }}</span> hasil dari <span id="totalGuests">{{ $stats['total'] }}</span> tamu
+     </div>
+ </div>
+ 
+ <!-- Guest List -->
+ <div class="bg-white rounded-2xl p-6 card-shadow">
+-    <div id="guestList" class="space-y-3">
++    <div id="noResultsMessage" class="{{ $guests->isEmpty() && request('search') ? '' : 'hidden' }} text-center py-12 text-gray-500">
++        <i class="fas fa-search text-6xl mb-4 opacity-50"></i>
++        <p class="text-lg">Tidak ada tamu ditemukan</p>
++        <p class="text-sm mt-2">Coba kata kunci lain atau filter berbeda</p>
++        <button onclick="clearSearch()" class="mt-4 btn-primary text-white px-6 py-3 rounded-xl">
++            <i class="fas fa-times mr-2"></i>Reset Pencarian
++        </button>
++    </div>
++
++    <div id="guestList" class="space-y-3 {{ $guests->isEmpty() && request('search') ? 'hidden' : '' }}">
+         @forelse($guests ?? [] as $index => $guest)
+         <div class="guest-item flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition"
+              data-guest-id="{{ $guest->id }}"
+-             data-guest-name="{{ $guest->name }}"
+              data-group-id="{{ $guest->group_id }}"
+              data-has-attendance="{{ $guest->attendance ? 'true' : 'false' }}">
+             <div class="flex items-center space-x-4 flex-1">
+-                <div class="text-gray-500 font-semibold">{{ $index + 1 }}.</div>
++                <div class="text-gray-500 font-semibold">{{ $guests->firstItem() + $index }}.</div>
+                 <div class="flex-1">
+                     <div class="flex items-center space-x-2">
+                         <h4 class="font-semibold text-gray-800">{{ $guest->name }}</h4>
+@@ -81,7 +90,7 @@ class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-xl focus:outline-no
+                         @endif
+                     </div>
+                     <p class="text-sm text-gray-500">{{ $guest->faculty }} | {{ $guest->study_program }}</p>
+-                    <p class="text-sm text-gray-500">{{ $guest->guests_count }} Orang</p>
++                    <p class="text-sm text-gray-500">NPM: {{ $guest->npm }} | {{ $guest->guests_count }} Orang</p>
+                     <p class="text-xs text-gray-400">{{ $guest->created_at->format('d/m/Y H:i') }}</p>
+                 </div>
+             </div>
+@@ -105,6 +114,8 @@ class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-xl focus:outline-no
+                        data-guest-id="{{ $guest->id }}"
+                        data-guest-name="{{ $guest->name }}"
+                        data-guest-address="{{ $guest->address }}"
++                       data-guest-faculty="{{ $guest->faculty }}"
++                       data-guest-program="{{ $guest->study_program }}"
+                        data-guest-qr="{{ $guest->qr_code }}">
+                         <i class="fas fa-qrcode text-purple-600 mr-2"></i>Cetak QR Code
+                     </a>
+@@ -132,8 +143,8 @@ class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-xl focus:outline-no
+ 
+     <!-- Pagination -->
+     @if(isset($guests) && $guests->hasPages())
+-    <div class="flex justify-center mt-6">
+-        {{ $guests->links() }}
++    <div class="flex justify-center mt-6" id="paginationContainer">
++        {{ $guests->appends(request()->query())->links() }}
+     </div>
+     @endif
+ </div>
+@@ -149,7 +160,7 @@ class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-xl focus:outline-no
+             <!-- QR Code will be generated here -->
+         </div>
+ 
+-        <div class="flex space-x-3 mt-6">
++        <div class="flex space-x-3 mt-6 no-print">
+             <button onclick="printQRCode()" class="flex-1 bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
+                 <i class="fas fa-print mr-2"></i>Print
+             </button>
+@@ -189,16 +200,44 @@ class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-xl focus:outline-no
+     }
+ 
+     @media print {
++        /* Hide everything on the page */
+         body * {
+-            visibility: hidden;
++            visibility: hidden !important;
++        }
++
++        /* Show only the QR modal content */
++        #qrPrintModal {
++            visibility: visible !important;
++            position: fixed !important;
++            inset: 0 !important;
++            background-color: white !important;
++            z-index: 9999 !important;
+         }
+-        #qrPrintContent, #qrPrintContent * {
+-            visibility: visible;
++
++        #qrPrintModal * {
++            visibility: visible !important;
++        }
++
++        /* Hide modal close button and action buttons in print */
++        #qrPrintModal .no-print,
++        #qrPrintModal button,
++        #closeQrModal {
++            display: none !important;
+         }
++
++        /* Center the QR card on page */
+         #qrPrintContent {
+-            position: absolute;
+-            left: 0;
+-            top: 0;
++            position: absolute !important;
++            left: 50% !important;
++            top: 50% !important;
++            transform: translate(-50%, -50%) !important;
++            width: 100% !important;
++            max-width: 600px !important;
++        }
++
++        #qrCardForPrint {
++            page-break-inside: avoid !important;
++            box-shadow: none !important;
+         }
+     }
+ </style>
+@@ -210,52 +249,92 @@ class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-xl focus:outline-no
+     const APP_URL = '{{ url('/') }}';
+     const EVENT_NAME = '{{ $event->name ?? 'Demo Event' }}';
+     const EVENT_DATE = '{{ $event->date ? $event->date->format('l, d F Y') : 'Kamis, 12 September 2024' }}';
++    const CSRF_TOKEN = '{{ csrf_token() }}';
+ 
+-    // Search functionality
++    let searchTimeout = null;
++
++    // Server-side search with debouncing
+     document.getElementById('searchInput').addEventListener('input', function(e) {
+-        const searchTerm = e.target.value.toLowerCase();
+-        filterGuests();
+-    });
++        const searchTerm = e.target.value.trim();
+ 
+-    // Filter tabs
+-    document.querySelectorAll('.filter-tab').forEach(tab => {
+-        tab.addEventListener('click', function() {
+-            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+-            this.classList.add('active');
+-            filterGuests();
+-        });
++        // Clear previous timeout
++        if (searchTimeout) {
++            clearTimeout(searchTimeout);
++        }
++
++        // Show loading indicator
++        document.getElementById('searchLoading').classList.remove('hidden');
++
++        // Debounce search - wait 500ms after user stops typing
++        searchTimeout = setTimeout(() => {
++            performServerSearch(searchTerm);
++        }, 500);
+     });
+ 
+-    function filterGuests() {
+-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
++    function performServerSearch(searchTerm) {
+         const activeTab = document.querySelector('.filter-tab.active');
+         const filterType = activeTab.dataset.filter;
+         const groupId = activeTab.dataset.groupId;
+ 
+-        document.querySelectorAll('.guest-item').forEach(item => {
+-            const name = item.dataset.guestName.toLowerCase();
+-            const itemGroupId = item.dataset.groupId;
+-            const hasAttendance = item.dataset.hasAttendance === 'true';
++        // Build URL with search and filter parameters
++        const url = new URL(window.location.href);
+ 
+-            let showItem = true;
++        if (searchTerm) {
++            url.searchParams.set('search', searchTerm);
++        } else {
++            url.searchParams.delete('search');
++        }
+ 
+-            // Search filter
+-            if (searchTerm && !name.includes(searchTerm)) {
+-                showItem = false;
++        if (filterType && filterType !== 'all') {
++            url.searchParams.set('filter', filterType);
++            if (groupId) {
++                url.searchParams.set('group_id', groupId);
+             }
++        } else {
++            url.searchParams.delete('filter');
++            url.searchParams.delete('group_id');
++        }
++
++        // Reload page with search parameters
++        window.location.href = url.toString();
++    }
+ 
+-            // Tab filter
+-            if (filterType === 'hadir' && !hasAttendance) {
+-                showItem = false;
+-            } else if (filterType === 'belum' && hasAttendance) {
+-                showItem = false;
+-            } else if (filterType === 'group' && itemGroupId !== groupId) {
+-                showItem = false;
++    function clearSearch() {
++        document.getElementById('searchInput').value = '';
++        const url = new URL(window.location.href);
++        url.searchParams.delete('search');
++        window.location.href = url.toString();
++    }
++
++    // Filter tabs - work with search
++    document.querySelectorAll('.filter-tab').forEach(tab => {
++        tab.addEventListener('click', function() {
++            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
++            this.classList.add('active');
++
++            const filterType = this.dataset.filter;
++            const groupId = this.dataset.groupId;
++            const searchTerm = document.getElementById('searchInput').value.trim();
++
++            const url = new URL(window.location.href);
++
++            if (searchTerm) {
++                url.searchParams.set('search', searchTerm);
++            }
++
++            if (filterType && filterType !== 'all') {
++                url.searchParams.set('filter', filterType);
++                if (groupId) {
++                    url.searchParams.set('group_id', groupId);
++                }
++            } else {
++                url.searchParams.delete('filter');
++                url.searchParams.delete('group_id');
+             }
+ 
+-            item.style.display = showItem ? '' : 'none';
++            window.location.href = url.toString();
+         });
+-    }
++    });
+ 
+     // Action menu toggle
+     document.querySelectorAll('.action-menu-btn').forEach(btn => {
+@@ -305,23 +384,17 @@ function filterGuests() {
+ 
+     // Bulk WhatsApp
+     document.getElementById('bulkWhatsAppBtn').addEventListener('click', function() {
+-        const visibleGuests = [];
+-        document.querySelectorAll('.guest-item').forEach(item => {
+-            if (item.style.display !== 'none') {
+-                visibleGuests.push({
+-                    name: item.dataset.guestName,
+-                    id: item.dataset.guestId
+-                });
+-            }
+-        });
++        const visibleGuests = document.querySelectorAll('.guest-item').length;
+ 
+-        if (visibleGuests.length === 0) {
++        if (visibleGuests === 0) {
+             alert('Tidak ada tamu yang dipilih');
+             return;
+         }
+ 
+-        if (confirm(`Kirim WhatsApp ke ${visibleGuests.length} tamu?`)) {
+-            window.location.href = '{{ route("guests.bulk-whatsapp") }}?filter=' + document.querySelector('.filter-tab.active').dataset.filter;
++        if (confirm(`Kirim WhatsApp ke ${visibleGuests} tamu yang terlihat di halaman ini?`)) {
++            const activeTab = document.querySelector('.filter-tab.active');
++            const url = '{{ route("guests.bulk-whatsapp") }}?filter=' + activeTab.dataset.filter;
++            window.location.href = url;
+         }
+     });
+ 
+@@ -332,11 +405,21 @@ function filterGuests() {
+         btn.addEventListener('click', function(e) {
+             e.preventDefault();
+             const guestName = this.dataset.guestName;
+-            const guestAddress = this.dataset.guestAddress;
++            const guestFaculty = this.dataset.guestFaculty || '';
++            const guestProgram = this.dataset.guestProgram || '';
+             const guestQr = this.dataset.guestQr;
+ 
+-            currentQRData = { name: guestName, address: guestAddress, qr: guestQr };
+-            generateQRCode(guestName, guestAddress, guestQr);
++            // Combine faculty and program for address display
++            const addressDisplay = guestFaculty + (guestProgram ? ', ' + guestProgram : '');
++
++            currentQRData = {
++                name: guestName,
++                faculty: guestFaculty,
++                program: guestProgram,
++                qr: guestQr
++            };
++
++            generateQRCode(guestName, addressDisplay, guestQr, guestFaculty);
+             document.getElementById('qrPrintModal').classList.remove('hidden');
+         });
+     });
+@@ -345,42 +428,59 @@ function filterGuests() {
+         document.getElementById('qrPrintModal').classList.add('hidden');
+     });
+ 
+-    function generateQRCode(guestName, guestAddress, qrCode) {
++    function generateQRCode(guestName, guestAddress, qrCode, faculty = '') {
++        // Determine footer color based on faculty
++        const facultyUpper = faculty.toUpperCase();
++        let footerBg = '#1e3a8a'; // Default blue
++        let footerTextColor = '#ffffff';
++
++        if (facultyUpper.includes('HUKUM')) {
++            footerBg = '#dc2626'; // Red
++            footerTextColor = '#ffffff';
++        } else if (facultyUpper.includes('EKONOMI') || facultyUpper.includes('BISNIS')) {
++            footerBg = '#f59e0b'; // Orange/Yellow
++            footerTextColor = '#000000';
++        } else if (facultyUpper.includes('KEDOKTERAN')) {
++            footerBg = '#16a34a'; // Green
++            footerTextColor = '#ffffff';
++        } else if (facultyUpper.includes('KESEHATAN')) {
++            footerBg = '#e5e7eb'; // Light gray
++            footerTextColor = '#000000';
++        } else if (facultyUpper.includes('TEKNIK')) {
++            footerBg = '#1e3a8a'; // Blue
++            footerTextColor = '#ffffff';
++        }
++
+         const content = `
+-            <div class="bg-white p-8 border-4 border-gray-200 rounded-2xl inline-block">
+-                <div class="text-center mb-6">
+-                    <div class="flex items-center justify-center space-x-3 mb-4">
+-                        <i class="fas fa-qrcode text-4xl text-purple-600"></i>
+-                        <div>
+-                            <h2 class="text-2xl font-bold text-gray-800">TAMU</h2>
+-                            <p class="text-xl font-bold text-yellow-600">KAMI</p>
+-                        </div>
+-                    </div>
+-                    <div class="h-1 bg-gradient-to-r from-purple-600 to-yellow-600 rounded"></div>
++            <div id="qrCardForPrint" class="bg-white shadow-xl overflow-hidden border border-gray-200" style="max-width: 600px; margin: 0 auto;">
++                <!-- Header with Event Info (Always Blue) -->
++                <div style="background-color: #1e3a8a; color: #ffffff; padding: 32px; text-align: center; border-radius: 24px; margin: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
++                    <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">Selamat Datang di</h2>
++                    <h3 style="font-size: 24px; font-weight: bold; line-height: 1.3;">Acara Wisuda-XXI, T/A: 2024/2025</h3>
+                 </div>
+ 
+-                <div class="bg-gray-50 p-6 rounded-xl mb-6">
+-                    <p class="text-sm text-gray-600 mb-2">${EVENT_NAME}</p>
+-                    <h3 class="text-3xl font-bold text-gray-800 mb-4">${EVENT_NAME}</h3>
+-                    <p class="text-gray-600">${EVENT_DATE}</p>
+-                </div>
++                <!-- Guest Info -->
++                <div style="padding: 32px;">
++                    <div style="text-align: center; margin-bottom: 32px;">
++                        <p style="color: #6b7280; margin-bottom: 12px; font-size: 18px;">Salam, Dear</p>
++                        <h4 style="font-size: 40px; font-weight: bold; color: #1f2937; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.05em;">${guestName}</h4>
++                        <p style="font-size: 16px; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em;">${guestAddress}</p>
++                    </div>
+ 
+-                <div class="mb-6">
+-                    <p class="text-gray-600 mb-2">Dear,</p>
+-                    <h4 class="text-2xl font-bold text-gray-800 mb-4">${guestName}</h4>
+-                    <p class="text-sm text-gray-600">Alamat/Keterangan:</p>
+-                    <p class="text-lg font-semibold text-gray-800">${guestAddress}</p>
++                    <!-- QR Code -->
++                    <div style="display: flex; justify-content: center; margin-bottom: 32px;">
++                        <div id="qrcodeCanvas" style="padding: 20px; background-color: white; border: 4px solid #a78bfa; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>
++                    </div>
+                 </div>
+ 
+-                <div id="qrcodeCanvas" class="flex justify-center mb-6"></div>
+-
+-                <div class="bg-black text-white p-4 rounded-lg text-center">
+-                    <div class="flex items-center justify-center space-x-2 mb-2">
+-                        <i class="fas fa-qrcode text-xl text-yellow-500"></i>
+-                        <span class="font-bold text-lg">TAMU <span class="text-yellow-500">KAMI</span></span>
++                <!-- Footer (Changes color based on faculty) -->
++                <div style="background-color: ${footerBg}; color: ${footerTextColor}; padding: 24px; text-align: center;">
++                    <p style="font-size: 20px; font-weight: bold; margin-bottom: 12px;">HARAP TUNJUKKAN QR CODE INI</p>
++                    <p style="font-size: 14px; margin-bottom: 16px;">Sebagai akses masuk lokasi acara wisuda uniba</p>
++                    <div style="font-size: 14px;">
++                        <p style="margin-bottom: 4px;">Waktu: 07:00 - 16:15 WIB - Tanggal: ${EVENT_DATE}</p>
++                        <p>Lokasi: Universitas Batam - Gedung: Graha Bintang</p>
+                     </div>
+-                    <p class="text-sm">HARAP TUNJUKKAN KARTU INI</p>
+-                    <p class="text-xs">SEBAGAI AKSES MASUK LOKASI ACARA!</p>
+                 </div>
+             </div>
+         `;
+@@ -403,8 +503,26 @@ function printQRCode() {
+     }
+ 
+     function downloadQRCode() {
+-        // Implementation for download
+-        alert('Download QR Code feature coming soon!');
++        // Get the canvas element from QR Code
++        const canvas = document.querySelector('#qrcodeCanvas canvas');
++
++        if (!canvas) {
++            alert('QR Code belum di-generate. Silakan tunggu sebentar dan coba lagi.');
++            return;
++        }
++
++        // Convert canvas to blob and download
++        canvas.toBlob(function(blob) {
++            const url = window.URL.createObjectURL(blob);
++            const link = document.createElement('a');
++            const guestName = currentQRData ? currentQRData.name : 'Guest';
++            link.download = `QR-Code-${guestName.replace(/\s+/g, '-')}.png`;
++            link.href = url;
++            document.body.appendChild(link);
++            link.click();
++            document.body.removeChild(link);
++            window.URL.revokeObjectURL(url);
++        });
+     }
+ 
+     // Delete Guest
+@@ -422,7 +540,7 @@ function downloadQRCode() {
+                 const csrfToken = document.createElement('input');
+                 csrfToken.type = 'hidden';
+                 csrfToken.name = '_token';
+-                csrfToken.value = '{{ csrf_token() }}';
++                csrfToken.value = CSRF_TOKEN;
+ 
+                 const methodField = document.createElement('input');
+                 methodField.type = 'hidden';
+@@ -436,16 +554,6 @@ function downloadQRCode() {
+             }
+         });
+     });
+-
+-    // Export PDF
+-    document.getElementById('exportPdfBtn').addEventListener('click', function() {
+-        window.location.href = '{{ route("guests.export.pdf") }}';
+-    });
+-
+-    // Export Excel
+-    document.getElementById('exportExcelBtn').addEventListener('click', function() {
+-        window.location.href = '{{ route("guests.export.excel") }}';
+-    });
+ </script>
+ @endpush
+ @endsection
