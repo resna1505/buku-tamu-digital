@@ -93,9 +93,10 @@
                 >
                     <option value="">Pilih Fakultas</option>
                     <option value="Teknik" {{ old('faculty', $guest->faculty) == 'Teknik' ? 'selected' : '' }}>Teknik</option>
-                    <option value="Ekonomi" {{ old('faculty', $guest->faculty) == 'Ekonomi' ? 'selected' : '' }}>Ekonomi</option>
+                    <option value="Ekonomi & Bisnis" {{ old('faculty', $guest->faculty) == 'Ekonomi' ? 'selected' : '' }}>Ekonomi</option>
                     <option value="Hukum" {{ old('faculty', $guest->faculty) == 'Hukum' ? 'selected' : '' }}>Hukum</option>
-                    <option value="FISIP" {{ old('faculty', $guest->faculty) == 'FISIP' ? 'selected' : '' }}>FISIP</option>
+                    <option value="Ilmu Kesehatan" {{ old('faculty', $guest->faculty) == 'Ilmu Kesehatan' ? 'selected' : '' }}>Ilmu Kesehatan</option>
+                    <option value="Kedokteran" {{ old('faculty', $guest->faculty) == 'Kedokteran' ? 'selected' : '' }}>Kedokteran</option>
                 </select>
                 @error('faculty')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>

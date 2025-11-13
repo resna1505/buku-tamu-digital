@@ -20,9 +20,9 @@ class GuestController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource with search and filter.
      */
-    public function index()
+    public function index(Request $request)
     {
         $event = Event::where('is_active', true)->first();
 
@@ -31,10 +31,41 @@ class GuestController extends Controller
                 ->with('error', 'Tidak ada event aktif.');
         }
 
-        $guests = Guest::where('event_id', $event->id)
-            ->with(['group', 'attendance'])
-            ->latest()
-            ->paginate(20);
+        // Start query
+        $query = Guest::where('event_id', $event->id)
+            ->with(['group', 'attendance']);
+
+        // Apply search filter - SEARCH ACROSS ALL DATABASE
+        $search = $request->get('search');
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('student_name', 'like', '%' . $search . '%')
+                  ->orWhere('npm', 'like', '%' . $search . '%')
+                  ->orWhere('faculty', 'like', '%' . $search . '%')
+                  ->orWhere('study_program', 'like', '%' . $search . '%')
+                  ->orWhere('guest_1_name', 'like', '%' . $search . '%')
+                  ->orWhere('guest_2_name', 'like', '%' . $search . '%')
+                  ->orWhere('whatsapp', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Apply attendance filter
+        $filter = $request->get('filter');
+        if ($filter === 'hadir') {
+            $query->whereHas('attendance');
+        } elseif ($filter === 'belum') {
+            $query->whereDoesntHave('attendance');
+        } elseif ($filter === 'group') {
+            $groupId = $request->get('group_id');
+            if ($groupId) {
+                $query->where('group_id', $groupId);
+            }
+        }
+
+        // Get paginated guests (100 per page when searching)
+        $perPage = $search ? 100 : 50;
+        $guests = $query->latest()->paginate($perPage);
 
         // Get all groups for filter
         $groups = GuestGroup::where('event_id', $event->id)->get();
@@ -145,8 +176,6 @@ class GuestController extends Controller
 
         $guest = Guest::create($guestData);
 
-        // TODO: Generate QR Code image here using QRCodeService
-
         return redirect()->route('guests.index')
             ->with('success', 'Data wisuda "' . $guest->name . '" dengan ' . $guestCount . ' tamu berhasil ditambahkan!');
     }
@@ -174,8 +203,6 @@ class GuestController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    // GANTI METHOD update() di GuestController.php dengan code ini:
-
     public function update(Request $request, Guest $guest)
     {
         $validated = $request->validate([
@@ -259,7 +286,7 @@ class GuestController extends Controller
     }
 
     /**
-     * Search guests (only not checked in).
+     * Search guests (only not checked in) - Server-side search across all database.
      */
     public function search(Request $request)
     {
@@ -272,19 +299,30 @@ class GuestController extends Controller
 
         $searchTerm = $request->get('q', '');
 
-        // Get only guests who haven't checked in
-        $guests = Guest::where('event_id', $event->id)
-            ->whereDoesntHave('attendance')
-            ->when($searchTerm, function($query) use ($searchTerm) {
-                $query->where(function($q) use ($searchTerm) {
-                    $q->where('name', 'like', '%' . $searchTerm . '%')
-                      ->orWhere('address', 'like', '%' . $searchTerm . '%')
-                      ->orWhere('whatsapp', 'like', '%' . $searchTerm . '%');
-                });
-            })
-            ->with('group')
+        // Build query for guests who haven't checked in
+        $query = Guest::where('event_id', $event->id)
+            ->whereDoesntHave('attendance');
+
+        // Apply multi-field search across ALL database
+        if ($searchTerm) {
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('student_name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('npm', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('faculty', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('study_program', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('guest_1_name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('guest_2_name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('whatsapp', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('address', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        // Get paginated results (show more results when searching)
+        $perPage = $searchTerm ? 100 : 20;
+        $guests = $query->with('group')
             ->latest()
-            ->paginate(20);
+            ->paginate($perPage);
 
         return view('guests.search', compact('guests', 'searchTerm', 'event'));
     }
