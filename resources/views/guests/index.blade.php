@@ -38,14 +38,6 @@
         <button id="bulkWhatsAppBtn" class="export-btn bg-green-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-green-600 transition">
             <i class="fab fa-whatsapp mr-2"></i>Kirim WA Massal
         </button>
-        <a href="{{ route('guests.export.pdf') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" 
-           class="export-btn bg-red-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-red-600 transition">
-            <i class="fas fa-file-pdf mr-2"></i>Export PDF
-        </a>
-        <a href="{{ route('guests.export.excel') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" 
-           class="export-btn bg-blue-500 text-white px-4 py-2 rounded-lg text-sm flex items-center hover:bg-blue-600 transition">
-            <i class="fas fa-file-excel mr-2"></i>Export Excel
-        </a>
     </div>
 </div>
 
@@ -498,8 +490,6 @@
         printContent.innerHTML = '';  // Clear completely first
 
         // Then set new content
-        document.querySelectorAll('#qrcodeCanvas').forEach(el => el.remove());
-
         printContent.innerHTML = content;
 
         // Wait for DOM to settle before generating QR
@@ -520,7 +510,7 @@
                     correctLevel: QRCode.CorrectLevel.H
                 });
             }
-        }, 300);
+        }, 100);
     }
 
     function printQRCode() {
