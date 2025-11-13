@@ -200,7 +200,24 @@
     }
 
     @media print {
-        /* Hide everything on the page */
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: white !important;
+        }
+
+        /* Hide everything first */
         body * {
             visibility: hidden !important;
         }
@@ -218,26 +235,95 @@
             visibility: visible !important;
         }
 
-        /* Hide modal close button and action buttons in print */
+        /* Hide modal buttons */
         #qrPrintModal .no-print,
         #qrPrintModal button,
         #closeQrModal {
             display: none !important;
+            visibility: hidden !important;
         }
 
-        /* Center the QR card on page */
+        /* Center the QR card with precise sizing */
         #qrPrintContent {
-            position: absolute !important;
+            position: fixed !important;
             left: 50% !important;
             top: 50% !important;
             transform: translate(-50%, -50%) !important;
-            width: 100% !important;
-            max-width: 600px !important;
+            width: 180mm !important;
+            max-width: 180mm !important;
         }
 
         #qrCardForPrint {
             page-break-inside: avoid !important;
             box-shadow: none !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Optimize font sizes for print */
+        #qrCardForPrint h2 {
+            font-size: 1rem !important;
+        }
+
+        #qrCardForPrint h3 {
+            font-size: 1.25rem !important;
+        }
+
+        #qrCardForPrint h4 {
+            font-size: 2rem !important;
+        }
+
+        #qrCardForPrint p {
+            font-size: 0.875rem !important;
+        }
+
+        /* Optimize padding and margins */
+        #qrCardForPrint > div:first-child {
+            padding: 1.5rem !important;
+        }
+
+        #qrCardForPrint > div:nth-child(2) {
+            padding: 1.5rem !important;
+        }
+
+        #qrCardForPrint > div:last-child {
+            padding: 1.25rem !important;
+        }
+
+        /* QR Code sizing */
+        #qrcodeCanvas {
+            padding: 12px !important;
+        }
+
+        #qrcodeCanvas canvas {
+            width: 220px !important;
+            height: 220px !important;
+        }
+
+        /* Barcode sizing */
+        #barcodeCanvas {
+            max-width: 100% !important;
+            margin: 0.5rem auto !important;
+        }
+
+        #barcodeCanvas svg {
+            max-width: 350px !important;
+            height: 60px !important;
+        }
+
+        /* Reduce margins between sections */
+        #qrCardForPrint [style*="margin-bottom: 32px"] {
+            margin-bottom: 1rem !important;
+        }
+
+        #qrCardForPrint [style*="margin-bottom: 24px"] {
+            margin-bottom: 0.75rem !important;
+        }
+
+        /* Ensure colors print correctly */
+        #qrCardForPrint [style*="background-color"] {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
     }
 </style>
@@ -245,6 +331,7 @@
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 <script>
     const APP_URL = '{{ url('/') }}';
     const EVENT_NAME = '{{ $event->name ?? 'Demo Event' }}';
@@ -471,6 +558,14 @@
                     <div style="display: flex; justify-content: center; margin-bottom: 32px;">
                         <div id="qrcodeCanvas" style="padding: 20px; background-color: white; border: 4px solid #a78bfa; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>
                     </div>
+
+                    <!-- Barcode -->
+                    <div style="margin-bottom: 32px;">
+                        <div style="display: flex; justify-content: center; margin-bottom: 12px;">
+                            <svg id="barcodeCanvas"></svg>
+                        </div>
+                        <p style="text-align: center; font-size: 14px; color: #6b7280; font-family: monospace; font-weight: 600;">${qrCode}</p>
+                    </div>
                 </div>
 
                 <!-- Footer (Changes color based on faculty) -->
@@ -509,6 +604,24 @@
                     colorLight: "#ffffff",
                     correctLevel: QRCode.CorrectLevel.H
                 });
+            }
+
+            // Generate Barcode
+            const barcodeContainer = document.getElementById('barcodeCanvas');
+            if (barcodeContainer && typeof JsBarcode !== 'undefined') {
+                try {
+                    JsBarcode(barcodeContainer, qrCode, {
+                        format: "CODE128",
+                        width: 2,
+                        height: 70,
+                        displayValue: false,
+                        margin: 10,
+                        background: "#ffffff",
+                        lineColor: "#000000"
+                    });
+                } catch (error) {
+                    console.error('Barcode generation error:', error);
+                }
             }
         }, 100);
     }
