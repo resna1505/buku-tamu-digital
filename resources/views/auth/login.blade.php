@@ -68,7 +68,7 @@
                     <img src="{{ asset('images/logo-blue.png') }}" alt="TamuKami Logo" class="w-45 h-24 mx-auto">
                 </div>
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">Universitas Batam</h1>
-                <p class="text-gray-600">E-Invitation Wisuda XXI UNIBA - QR Code</p>
+                <p class="text-gray-600">E-Invitation Wisuda XXII UNIBA - QR Code</p>
             </div>
 
             <!-- Error Messages -->

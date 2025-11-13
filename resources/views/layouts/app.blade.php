@@ -55,7 +55,7 @@
                 </div> --}}
                 <div>
                     <h1 class="text-xl font-bold">Universitas Batam</h1>
-                    <p class="text-xs opacity-90">E-Invitation Wisuda XXI UNIBA - QR Code</p>
+                    <p class="text-xs opacity-90">E-Invitation Wisuda XXII UNIBA - QR Code</p>
                 </div>
             </div>
 
