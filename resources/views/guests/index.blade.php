@@ -558,6 +558,10 @@
                     <div style="display: flex; justify-content: center; margin-bottom: 32px;">
                         <div id="qrcodeCanvas" style="padding: 20px; background-color: white; border: 4px solid #a78bfa; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>
                     </div>
+
+                     <div style="margin-bottom: 32px;">
+                        <p style="text-align: center; font-size: 14px; color: #6b7280; font-family: monospace; font-weight: 600;">${table_number}</p>
+                    </div>
                 </div>
 
                 <!-- Footer (Changes color based on faculty) -->

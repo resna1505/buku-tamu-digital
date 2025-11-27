@@ -215,6 +215,10 @@
                     <div class="flex justify-center mb-6">
                         <div id="qrcodeCanvas" class="p-5 bg-white qr-border rounded-2xl"></div>
                     </div>
+
+                     <div style="margin-bottom: 32px;">
+                        <p style="text-align: center; font-size: 14px; color: #6b7280; font-family: monospace; font-weight: 600;">{{ $guest->table_number }}</p>
+                    </div>
                 </div>
 
                 <!-- Footer (Berubah Warna Sesuai Fakultas) -->
