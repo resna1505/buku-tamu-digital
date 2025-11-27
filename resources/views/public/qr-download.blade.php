@@ -216,8 +216,8 @@
                         <div id="qrcodeCanvas" class="p-5 bg-white qr-border rounded-2xl"></div>
                     </div>
 
-                     <div style="margin-bottom: 32px;">
-                        <p style="text-align: center; font-size: 14px; color: #6b7280; font-family: monospace; font-weight: 600;">{{ $guest->table_number }}</p>
+                     <div>
+                        <p style="text-align: center;" class="text-xl font-bold mb-3 ">Kursi : {{ $guest->table_number }}</p>
                     </div>
                 </div>
 

@@ -116,7 +116,8 @@
                        data-guest-address="{{ $guest->address }}"
                        data-guest-faculty="{{ $guest->faculty }}"
                        data-guest-program="{{ $guest->study_program }}"
-                       data-guest-qr="{{ $guest->qr_code }}">
+                       data-guest-qr="{{ $guest->qr_code }}"
+                        data-guest-table="{{ $guest->table_number }}">
                         <i class="fas fa-qrcode text-purple-600 mr-2"></i>Cetak QR Code
                     </a>
                     <a href="{{ route('guests.edit', $guest->id) }}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
@@ -495,6 +496,7 @@
             const guestFaculty = this.dataset.guestFaculty || '';
             const guestProgram = this.dataset.guestProgram || '';
             const guestQr = this.dataset.guestQr;
+            const guestTable = this.dataset.guestTable || '';
 
             // Combine faculty and program for address display
             const addressDisplay = guestFaculty + (guestProgram ? ', ' + guestProgram : '');
@@ -506,7 +508,7 @@
                 qr: guestQr
             };
 
-            generateQRCode(guestName, addressDisplay, guestQr, guestFaculty);
+            generateQRCode(guestName, addressDisplay, guestQr, guestFaculty, guestTable);
             document.getElementById('qrPrintModal').classList.remove('hidden');
         });
     });
@@ -515,112 +517,95 @@
         document.getElementById('qrPrintModal').classList.add('hidden');
     });
 
-    function generateQRCode(guestName, guestAddress, qrCode, faculty = '') {
-        // Determine footer color based on faculty
-        const facultyUpper = faculty.toUpperCase();
-        let footerBg = '#1e3a8a'; // Default blue
-        let footerTextColor = '#ffffff';
+function generateQRCode(guestName, guestAddress, qrCode, faculty = '', table_number = '') {
+    // Determine footer color based on faculty
+    const facultyUpper = faculty.toUpperCase();
+    let footerBg = '#1e3a8a'; // Default blue
+    let footerTextColor = '#ffffff';
 
-        if (facultyUpper.includes('HUKUM')) {
-            footerBg = '#dc2626'; // Red
-            footerTextColor = '#ffffff';
-        } else if (facultyUpper.includes('EKONOMI') || facultyUpper.includes('BISNIS')) {
-            footerBg = '#f59e0b'; // Orange/Yellow
-            footerTextColor = '#000000';
-        } else if (facultyUpper.includes('KEDOKTERAN')) {
-            footerBg = '#16a34a'; // Green
-            footerTextColor = '#ffffff';
-        } else if (facultyUpper.includes('KESEHATAN')) {
-            footerBg = '#e5e7eb'; // Light gray
-            footerTextColor = '#000000';
-        } else if (facultyUpper.includes('TEKNIK')) {
-            footerBg = '#1e3a8a'; // Blue
-            footerTextColor = '#ffffff';
-        }
+    if (facultyUpper.includes('HUKUM')) {
+        footerBg = '#dc2626'; // Red
+        footerTextColor = '#ffffff';
+    } else if (facultyUpper.includes('EKONOMI') || facultyUpper.includes('BISNIS')) {
+        footerBg = '#f59e0b'; // Orange/Yellow
+        footerTextColor = '#000000';
+    } else if (facultyUpper.includes('KEDOKTERAN')) {
+        footerBg = '#16a34a'; // Green
+        footerTextColor = '#ffffff';
+    } else if (facultyUpper.includes('KESEHATAN')) {
+        footerBg = '#e5e7eb'; // Light gray
+        footerTextColor = '#000000';
+    } else if (facultyUpper.includes('TEKNIK')) {
+        footerBg = '#1e3a8a'; // Blue
+        footerTextColor = '#ffffff';
+    }
 
-        const content = `
-            <div id="qrCardForPrint" class="bg-white shadow-xl overflow-hidden border border-gray-200" style="max-width: 600px; margin: 0 auto;">
-                <!-- Header with Event Info (Always Blue) -->
-                <div style="background-color: #1e3a8a; color: #ffffff; padding: 32px; text-align: center; border-radius: 24px; margin: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                    <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">Selamat Datang di</h2>
-                    <h3 style="font-size: 24px; font-weight: bold; line-height: 1.3;">Acara Wisuda-XXII, T/A: 2024/2025</h3>
+    const content = `
+        <div id="qrCardForPrint" class="bg-white shadow-xl overflow-hidden border border-gray-200" style="max-width: 600px; margin: 0 auto;">
+            <!-- Header with Event Info (Always Blue) -->
+            <div style="background-color: #1e3a8a; color: #ffffff; padding: 32px; text-align: center; border-radius: 24px; margin: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">Selamat Datang di</h2>
+                <h3 style="font-size: 24px; font-weight: bold; line-height: 1.3;">Acara Wisuda-XXII, T/A: 2024/2025</h3>
+            </div>
+
+            <!-- Guest Info -->
+            <div style="padding: 32px;">
+                <div style="text-align: center; margin-bottom: 32px;">
+                    <p style="color: #6b7280; margin-bottom: 12px; font-size: 18px;">Salam, Dear</p>
+                    <h4 style="font-size: 40px; font-weight: bold; color: #1f2937; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.05em;">${guestName}</h4>
+                    <p style="font-size: 16px; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em;">${guestAddress}</p>
                 </div>
 
-                <!-- Guest Info -->
-                <div style="padding: 32px;">
-                    <div style="text-align: center; margin-bottom: 32px;">
-                        <p style="color: #6b7280; margin-bottom: 12px; font-size: 18px;">Salam, Dear</p>
-                        <h4 style="font-size: 40px; font-weight: bold; color: #1f2937; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.05em;">${guestName}</h4>
-                        <p style="font-size: 16px; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em;">${guestAddress}</p>
-                    </div>
-
-                    <!-- QR Code -->
-                    <div style="display: flex; justify-content: center; margin-bottom: 32px;">
-                        <div id="qrcodeCanvas" style="padding: 20px; background-color: white; border: 4px solid #a78bfa; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>
-                    </div>
-
-                     <div style="margin-bottom: 32px;">
-                        <p style="text-align: center; font-size: 14px; color: #6b7280; font-family: monospace; font-weight: 600;">${table_number}</p>
-                    </div>
+                <!-- QR Code -->
+                <div style="display: flex; justify-content: center; margin-bottom: 32px;">
+                    <div id="qrcodeCanvas" style="padding: 20px; background-color: white; border: 4px solid #a78bfa; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>
                 </div>
 
-                <!-- Footer (Changes color based on faculty) -->
-                <div style="background-color: ${footerBg}; color: ${footerTextColor}; padding: 24px; text-align: center;">
-                    <p style="font-size: 20px; font-weight: bold; margin-bottom: 12px;">HARAP TUNJUKKAN QR CODE INI</p>
-                    <p style="font-size: 14px; margin-bottom: 16px;">Sebagai akses masuk lokasi acara wisuda uniba</p>
-                    <div style="font-size: 14px;">
-                        <p style="margin-bottom: 4px;">Waktu: 07:00 - 08:15 WIB - Tanggal: ${EVENT_DATE}</p>
-                        <p>Lokasi: Universitas Batam - Gedung: Graha Bintang</p>
-                    </div>
+                <!-- TABLE NUMBER -->
+                <div>
+                    <p style="text-align: center;" class="text-xl font-bold mb-3 ">Kursi : ${table_number || ''}</p>
                 </div>
             </div>
-        `;
 
-        // CRITICAL FIX: Clear ALL previous content first
-        const printContent = document.getElementById('qrPrintContent');
-        printContent.innerHTML = '';  // Clear completely first
+            <!-- Footer (Changes color based on faculty) -->
+            <div style="background-color: ${footerBg}; color: ${footerTextColor}; padding: 24px; text-align: center;">
+                <p style="font-size: 20px; font-weight: bold; margin-bottom: 12px;">HARAP TUNJUKKAN QR CODE INI</p>
+                <p style="font-size: 14px; margin-bottom: 16px;">Sebagai akses masuk lokasi acara wisuda uniba</p>
+                <div style="font-size: 14px;">
+                    <p style="margin-bottom: 4px;">Waktu: 07:00 - 08:15 WIB - Tanggal: ${EVENT_DATE}</p>
+                    <p>Lokasi: Universitas Batam - Gedung: Graha Bintang</p>
+                </div>
+            </div>
+        </div>
+    `;
 
-        // Then set new content
-        printContent.innerHTML = content;
+    // CRITICAL FIX: Clear ALL previous content first
+    const printContent = document.getElementById('qrPrintContent');
+    printContent.innerHTML = '';  // Clear completely first
 
-        // Wait for DOM to settle before generating QR
-        setTimeout(() => {
-            const qrContainer = document.getElementById('qrcodeCanvas');
+    // Then set new content
+    printContent.innerHTML = content;
 
-            // Ensure container is completely empty
-            if (qrContainer) {
-                qrContainer.innerHTML = '';
+    // Wait for DOM to settle before generating QR
+    setTimeout(() => {
+        const qrContainer = document.getElementById('qrcodeCanvas');
 
-                // Generate NEW QR Code
-                new QRCode(qrContainer, {
-                    text: qrCode,
-                    width: 300,
-                    height: 300,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-            }
+        // Ensure container is completely empty
+        if (qrContainer) {
+            qrContainer.innerHTML = '';
 
-            // Generate Barcode
-            const barcodeContainer = document.getElementById('barcodeCanvas');
-            if (barcodeContainer && typeof JsBarcode !== 'undefined') {
-                try {
-                    JsBarcode(barcodeContainer, qrCode, {
-                        format: "CODE128",
-                        width: 2,
-                        height: 70,
-                        displayValue: false,
-                        margin: 10,
-                        background: "#ffffff",
-                        lineColor: "#000000"
-                    });
-                } catch (error) {
-                    console.error('Barcode generation error:', error);
-                }
-            }
-        }, 100);
-    }
+            // Generate NEW QR Code
+            new QRCode(qrContainer, {
+                text: qrCode,
+                width: 300,
+                height: 300,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+    }, 100);
+}
 
     function printQRCode() {
         window.print();
