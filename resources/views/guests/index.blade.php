@@ -558,14 +558,6 @@
                     <div style="display: flex; justify-content: center; margin-bottom: 32px;">
                         <div id="qrcodeCanvas" style="padding: 20px; background-color: white; border: 4px solid #a78bfa; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>
                     </div>
-
-                    <!-- Barcode -->
-                    <div style="margin-bottom: 32px;">
-                        <div style="display: flex; justify-content: center; margin-bottom: 12px;">
-                            <svg id="barcodeCanvas"></svg>
-                        </div>
-                        <p style="text-align: center; font-size: 14px; color: #6b7280; font-family: monospace; font-weight: 600;">${qrCode}</p>
-                    </div>
                 </div>
 
                 <!-- Footer (Changes color based on faculty) -->
@@ -573,7 +565,7 @@
                     <p style="font-size: 20px; font-weight: bold; margin-bottom: 12px;">HARAP TUNJUKKAN QR CODE INI</p>
                     <p style="font-size: 14px; margin-bottom: 16px;">Sebagai akses masuk lokasi acara wisuda uniba</p>
                     <div style="font-size: 14px;">
-                        <p style="margin-bottom: 4px;">Waktu: 07:00 - 16:15 WIB - Tanggal: ${EVENT_DATE}</p>
+                        <p style="margin-bottom: 4px;">Waktu: 07:00 - 08:15 WIB - Tanggal: ${EVENT_DATE}</p>
                         <p>Lokasi: Universitas Batam - Gedung: Graha Bintang</p>
                     </div>
                 </div>

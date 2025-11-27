@@ -215,14 +215,6 @@
                     <div class="flex justify-center mb-6">
                         <div id="qrcodeCanvas" class="p-5 bg-white qr-border rounded-2xl"></div>
                     </div>
-
-                    <!-- Barcode Scanner Support -->
-                    <div class="mb-6">
-                        <div class="flex justify-center mb-3">
-                            <svg id="barcodeCanvas"></svg>
-                        </div>
-                        <p class="text-center text-sm text-gray-600 font-mono font-bold">{{ $guest->qr_code }}</p>
-                    </div>
                 </div>
 
                 <!-- Footer (Berubah Warna Sesuai Fakultas) -->
@@ -235,7 +227,7 @@
                         <p>Waktu: {{ $event->start_time ?? '07:00' }} - {{ $event->end_time ?? '16:15' }} WIB - Tanggal: {{ $event->date ? $event->date->format('d F Y') : '29 November 2025' }}</p>
                         <p>Lokasi: {{ $event->location ?? 'Universitas Batam - Gedung: Graha Bintang' }}</p>
                         @else
-                        <p>Waktu: 07:00 - 16:15 WIB - Tanggal: 29 November 2025</p>
+                        <p>Waktu: 07:00 - 08:15 WIB - Tanggal: 29 November 2025</p>
                         <p>Lokasi: Universitas Batam - Gedung: Graha Bintang</p>
                         @endif
                     </div>
