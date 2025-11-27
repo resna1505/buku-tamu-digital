@@ -248,7 +248,7 @@
             </div>
 
             <!-- Info Note -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 no-print mb-4">
+            {{-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4 no-print mb-4">
                 <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
                     <div class="flex items-start space-x-3">
                         <i class="fas fa-qrcode text-3xl text-purple-600"></i>
@@ -267,7 +267,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
             <div class="bg-white rounded-lg p-4 text-center no-print shadow-sm border border-gray-200">
                 <p class="text-base font-bold text-gray-800 mb-1">QR CODE INI BERLAKU UNTUK 2 (DUA) TAMU</p>
