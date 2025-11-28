@@ -199,7 +199,7 @@
                         <p class="text-sm opacity-90 mb-1">ALAMAT / KETERANGAN</p>
                         <p id="ticketGuestAddress" class="font-semibold mb-6">-</p>
 
-                        <p class="text-sm opacity-90 mb-1">NO. MEJA</p>
+                        <p class="text-sm opacity-90 mb-1">NO. KURSI</p>
                         <p id="ticketTableNumber" class="text-3xl font-bold mb-6">-</p>
                     </div>
 
